@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Fraunces", "Iowan Old Style", Palatino, serif;
+  --font-sans: "Outfit", "Avenir Next", "Segoe UI", sans-serif;
+
+  --color-ivory: #f6f0e6;
+  --color-paper: #fffaf4;
+  --color-ink: #3c2a24;
+  --color-cocoa: #6d4c41;
+  --color-blush: #f6d5d8;
+  --color-berry: #c84b63;
+  --color-berry-deep: #9a3048;
+  --color-butter: #f3dd9a;
+  --color-sage: #7f9474;
+  --color-sage-deep: #4d6248;
+  --color-lilac: #e6dced;
+  --color-line: #eadfD2;
+  --color-muted: #8d7368;
+
+  --shadow-soft: 0 24px 50px -32px color-mix(in srgb, var(--color-ink) 55%, transparent);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-ivory);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    text-wrap: balance;
+    font-weight: 560;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  img {
+    max-width: 100%;
+  }
+}
+
+@utility shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
