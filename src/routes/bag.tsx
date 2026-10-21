@@ -80,13 +80,11 @@ function BagPage() {
             <div className="rounded-3xl bg-blush p-5 text-sm">
               <Row label="Pieces" value={quote.subtotalPkr} />
               <Row label="Delivery" value={quote.shippingPkr} />
-              {quote.lines.some((line) => line.mystery) ? (
-                <p className="mt-2 text-sage-deep">
-                  {quote.freeMysteryDelivery
-                    ? "Free delivery is included because this is an eligible mystery gift paid in advance. It does not apply if you add other products. The order is not marked paid until the shop verifies the transfer."
-                    : quote.shippingNote}
-                </p>
-              ) : quote.shippingDiscountPkr > 0 ? <p className="text-sage-deep">Free delivery with prepaid mystery gifts · {quote.shippingNote}</p> : <p className="text-cocoa">{quote.shippingNote}</p>}
+              {quote.shippingPkr === 0 ? (
+                <p className="mt-2 text-sage-deep">Delivery is free when you pay in advance. Cash on delivery, for in-stock ready-made pieces only, adds the courier charge at checkout.</p>
+              ) : (
+                <p className="mt-2 text-cocoa">{quote.shippingNote}</p>
+              )}
               <p className="mt-2 text-xl">Estimated total <Price value={quote.totalPkr} /></p>
               <p className="text-cocoa">Final total is confirmed at checkout with your payment method. Prices come from the shop, not this page.</p>
             </div>

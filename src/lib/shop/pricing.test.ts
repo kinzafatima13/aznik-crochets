@@ -15,23 +15,36 @@ test("prepaid mystery-only order gets free delivery", () => {
   assert.equal(result.shippingDiscountPkr, 350);
 });
 
-test("ready-made order keeps standard delivery", () => {
+test("prepaid orders have free delivery", () => {
   const result = shippingFor({
     method: "easypaisa",
-    shippingPkr: 350,
+    shippingPkr: 250,
     freeOver: 0,
     subtotal: 4500,
     mysteryFreeEnabled: true,
     lines: [{ kind: "ready", linePkr: 4500, qualifiesMysteryFree: false }],
   });
-  assert.equal(result.shippingPkr, 350);
+  assert.equal(result.shippingPkr, 0);
+  assert.equal(result.shippingDiscountPkr, 250);
+});
+
+test("cash on delivery charges the courier fee", () => {
+  const result = shippingFor({
+    method: "cod",
+    shippingPkr: 250,
+    freeOver: 0,
+    subtotal: 4500,
+    mysteryFreeEnabled: true,
+    lines: [{ kind: "ready", linePkr: 4500, qualifiesMysteryFree: false }],
+  });
+  assert.equal(result.shippingPkr, 250);
   assert.equal(result.shippingDiscountPkr, 0);
 });
 
-test("mixed parcel does not wipe delivery for other pieces", () => {
+test("prepaid mixed parcels stay free", () => {
   const result = shippingFor({
     method: "jazzcash",
-    shippingPkr: 350,
+    shippingPkr: 250,
     freeOver: 0,
     subtotal: 9000,
     mysteryFreeEnabled: true,
@@ -40,33 +53,32 @@ test("mixed parcel does not wipe delivery for other pieces", () => {
       { kind: "ready", linePkr: 7010, qualifiesMysteryFree: false },
     ],
   });
-  assert.equal(result.shippingPkr, 350);
-  assert.match(result.note, /other pieces/i);
+  assert.equal(result.shippingPkr, 0);
 });
 
-test("cash on delivery does not unlock mystery free delivery", () => {
+test("cash on delivery does not unlock free delivery", () => {
   const result = shippingFor({
     method: "cod",
-    shippingPkr: 350,
+    shippingPkr: 250,
     freeOver: 0,
     subtotal: 1990,
     mysteryFreeEnabled: true,
     lines: [{ kind: "mystery", linePkr: 1990, qualifiesMysteryFree: true }],
   });
-  assert.equal(result.shippingPkr, 350);
+  assert.equal(result.shippingPkr, 250);
 });
 
-test("the offer stays off when the shop has disabled it", () => {
+test("advance payment is free even when the mystery offer is off", () => {
   const result = shippingFor({
     method: "bank",
-    shippingPkr: 350,
+    shippingPkr: 250,
     freeOver: 0,
     subtotal: 1990,
     mysteryFreeEnabled: false,
     lines: [{ kind: "mystery", linePkr: 1990, qualifiesMysteryFree: true }],
   });
-  assert.equal(result.shippingPkr, 350);
-  assert.equal(result.shippingDiscountPkr, 0);
+  assert.equal(result.shippingPkr, 0);
+  assert.equal(result.shippingDiscountPkr, 250);
 });
 
 test("catalog coupon ignores mystery value", () => {

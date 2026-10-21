@@ -51,7 +51,7 @@ function ShopForm({ initial }: { initial: Awaited<ReturnType<typeof adminDesk>>[
       <Area label="Easypaisa instructions" value={form.easypaisa} onChange={(event) => setForm({ ...form, easypaisa: event.target.value })} />
       <Area label="JazzCash instructions" value={form.jazzcash} onChange={(event) => setForm({ ...form, jazzcash: event.target.value })} />
       <Area label="Return policy" value={form.policy} onChange={(event) => setForm({ ...form, policy: event.target.value })} />
-      <Field label="Delivery PKR" type="number" value={form.shippingPkr} onChange={(event) => setForm({ ...form, shippingPkr: Number(event.target.value) })} />
+      <Field label="Cash on delivery charge (PKR). Advance payment is free." type="number" value={form.shippingPkr} onChange={(event) => setForm({ ...form, shippingPkr: Number(event.target.value) })} />
       <Field label="Free delivery over (0 = off)" type="number" value={form.freeOverPkr} onChange={(event) => setForm({ ...form, freeOverPkr: Number(event.target.value) })} />
       <label className="text-sm"><input type="checkbox" checked={form.paymentsConfigured} onChange={(event) => setForm({ ...form, paymentsConfigured: event.target.checked })} /> I replaced the sample payment details with my real accounts</label>
       <label className="text-sm"><input type="checkbox" checked={form.codReadyMade} onChange={(event) => setForm({ ...form, codReadyMade: event.target.checked })} /> Allow cash on delivery for in-stock ready-made pieces</label>

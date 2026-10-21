@@ -39,6 +39,7 @@ function CheckoutPage() {
       .then((next) => {
         setQuote(next);
         setError("");
+        if (!next.codAllowed && method === "cod") setMethod("bank");
       })
       .catch((err: Error) => {
         setQuote(null);
@@ -46,7 +47,14 @@ function CheckoutPage() {
       });
   }, [lines, coupon, method, ready]);
 
-  const instructions = method === "bank" ? pay.bank : method === "easypaisa" ? pay.easypaisa : method === "jazzcash" ? pay.jazzcash : "Pay the courier when the ready-made parcel arrives. This is not available for custom or mystery orders.";
+  const instructions =
+    method === "cod"
+      ? `Pay the courier Rs. ${pay.shippingPkr.toLocaleString("en-PK")} when the ready-made parcel arrives. Custom, made-to-order, and mystery pieces cannot use cash on delivery. They are paid in full before they are made.`
+      : method === "bank"
+        ? pay.bank
+        : method === "easypaisa"
+          ? pay.easypaisa
+          : pay.jazzcash;
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
@@ -76,8 +84,10 @@ function CheckoutPage() {
         ))}
         <label className={`flex min-h-11 items-center gap-3 rounded-2xl px-3 ${quote?.codAllowed ? "bg-paper" : "bg-ivory text-muted"}`}>
           <input type="radio" name="pay" disabled={!quote?.codAllowed} checked={method === "cod"} onChange={() => setMethod("cod")} />
-          Cash on delivery {quote?.codAllowed ? "" : "— off for this bag"}
+          Cash on delivery · Rs. {pay.shippingPkr.toLocaleString("en-PK")}
+          {quote?.codAllowed ? "" : " — only for in-stock ready-made pieces. Custom work is paid first."}
         </label>
+        <p className="text-sm text-cocoa">Bank transfer, Easypaisa, and JazzCash include free delivery. Cash on delivery adds Rs. {pay.shippingPkr.toLocaleString("en-PK")}.</p>
       </fieldset>
       <Panel className="mt-4">
         <p className="whitespace-pre-wrap text-sm text-cocoa">{instructions}</p>
@@ -126,7 +136,11 @@ function CheckoutPage() {
           >
             Place order
           </Button>
-          <p className="mt-3 text-sm text-cocoa">Placing the order does not mean it is paid. Upload the receipt on the next page. Production waits for verification.</p>
+          <p className="mt-3 text-sm text-cocoa">
+            {method === "cod"
+              ? "The courier collects the total, including the delivery charge. This is only for pieces already in stock."
+              : "Placing the order does not mean it is paid. Upload the receipt on the next page. Custom work is made only after payment is verified."}
+          </p>
       </div>
     </main>
   );

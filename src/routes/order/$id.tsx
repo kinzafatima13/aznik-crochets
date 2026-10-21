@@ -65,7 +65,13 @@ function OrderPage() {
     );
   }
   const mystery = order.items.some((item) => item.kind === "mystery");
+  const custom = order.items.some((item) => item.kind === "custom");
   const delivered = order.fulfillmentStatus === "delivered";
+  const thanks = order.items
+    .map((item) => (item.kind === "mystery" && !delivered ? "a mystery gift" : item.title))
+    .filter(Boolean);
+  const thanksFor =
+    thanks.length === 0 ? "your pieces" : thanks.length === 1 ? thanks[0] : `${thanks.slice(0, -1).join(", ")} and ${thanks.at(-1)}`;
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
       {mystery && !delivered ? (
@@ -76,8 +82,14 @@ function OrderPage() {
         </Panel>
       ) : null}
       <p className="text-xs uppercase tracking-widest text-berry">{order.id}</p>
-      <h1 className="font-display text-5xl">{customerStatus(order)}</h1>
+      <h1 className="font-display text-5xl">Thank you for your order of {thanksFor}</h1>
+      <p className="mt-2 text-cocoa">{customerStatus(order)}</p>
       <p className="mt-2 text-sm text-cocoa">{paymentLabel(order.paymentStatus)} · {fulfillmentLabel(order.fulfillmentStatus)} · {order.createdAt}</p>
+      {order.payOnDelivery ? (
+        <p className="mt-3 text-sm text-cocoa">Please keep {pkr(order.totalPkr)} ready for the courier. That includes the cash-on-delivery charge.</p>
+      ) : custom ? (
+        <p className="mt-3 text-sm text-cocoa">Your custom piece is not started until the shop verifies your payment.</p>
+      ) : null}
       <div className="mt-6 space-y-3">
         {order.items.map((item) => (
           <article key={item.id} className="flex gap-3 rounded-3xl bg-paper p-3">

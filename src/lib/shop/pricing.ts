@@ -15,38 +15,18 @@ export function shippingFor(args: {
   lines: ShipLine[];
 }): { shippingPkr: number; shippingDiscountPkr: number; note: string } {
   const base = Math.max(0, Math.round(args.shippingPkr));
-  const mystery = args.lines.filter((l) => l.kind === "mystery");
-  const others = args.lines.filter((l) => l.kind !== "mystery");
-  const prepaid = args.method !== "cod";
-  const allMysteryQualify =
-    mystery.length > 0 &&
-    mystery.every((l) => l.qualifiesMysteryFree) &&
-    args.mysteryFreeEnabled &&
-    prepaid;
-
-  if (allMysteryQualify && others.length === 0) {
+  if (args.method !== "cod") {
     return {
       shippingPkr: 0,
       shippingDiscountPkr: base,
-      note: "Free delivery with prepaid mystery gifts.",
+      note: "Free delivery because this order is paid in advance.",
     };
   }
-
-  let shipping = base;
-  let note = "Standard delivery across Pakistan.";
-  if (args.freeOver > 0 && args.subtotal >= args.freeOver) {
-    shipping = 0;
-    note = "Delivery is free on this order total.";
-  } else if (allMysteryQualify && others.length > 0) {
-    note =
-      "Mystery gifts travel free. Delivery is charged once for the other pieces in this parcel.";
-  } else if (mystery.length > 0 && !allMysteryQualify) {
-    note = prepaid
-      ? "This mystery tier does not include free delivery."
-      : "Free mystery delivery applies only when the gift is paid in advance.";
-  }
-
-  return { shippingPkr: shipping, shippingDiscountPkr: shipping === 0 && allMysteryQualify ? base : 0, note };
+  return {
+    shippingPkr: base,
+    shippingDiscountPkr: 0,
+    note: "Cash on delivery includes the courier charge. Custom pieces must be paid first.",
+  };
 }
 
 export function couponDiscount(args: {
