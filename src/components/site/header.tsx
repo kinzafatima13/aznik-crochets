@@ -54,7 +54,11 @@ export function Header() {
             </Link>
           ))}
           <Link to="/shop" search={{ ...blankShopSearch, collection: "mystery" }} className="text-sm text-cocoa hover:text-berry">Mystery Gifts</Link>
-          {owner ? <Link to="/admin" className="rounded-full bg-berry px-4 py-2 text-sm text-paper hover:bg-berry-deep">Desk</Link> : null}
+          {owner ? (
+            <Link to="/admin" className="rounded-full bg-berry px-4 py-2 text-sm text-paper hover:bg-berry-deep">Desk</Link>
+          ) : (
+            <Link to="/login" search={{ next: "/admin" }} className="rounded-full border border-line px-4 py-2 text-sm text-cocoa hover:border-berry hover:text-berry">Owner login</Link>
+          )}
         </nav>
         <form action="/shop" className="ml-auto hidden min-w-0 flex-1 md:block md:max-w-xs">
           <label className="relative block">
@@ -123,7 +127,11 @@ export function Header() {
                 <Link to="/admin" className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-berry px-5 text-sm text-paper">
                   Desk
                 </Link>
-              ) : null}
+              ) : (
+                <Link to="/login" search={{ next: "/admin" }} className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full border border-line px-5 text-sm text-cocoa">
+                  Owner login
+                </Link>
+              )}
               <p className="mt-6 text-sm text-cocoa">{chrome.settings.tagline}</p>
             </div>,
             document.body,
