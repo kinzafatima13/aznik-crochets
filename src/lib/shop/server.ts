@@ -521,9 +521,7 @@ async function buildQuote(sql: Sql, input: z.infer<typeof QuoteSchema>): Promise
     })),
   });
 
-  const codAllowed =
-    flag(settings.cod_ready_made) &&
-    built.every((line) => line.kind === "ready" && line.trackStock && !flag((line.options as { madeToOrder?: boolean }).madeToOrder));
+  const codAllowed = true;
   const requiresPrepay = built.some((line) => line.kind !== "ready" || !line.trackStock || flag((line.options as { madeToOrder?: boolean }).madeToOrder)) || flag(settings.custom_full_prepay) && built.some((line) => line.kind === "custom" || line.kind === "mystery");
   const total = Math.max(0, subtotal - discount + ship.shippingPkr);
 
@@ -767,12 +765,6 @@ export const placeOrder = createServerFn({ method: "POST" })
     const existing = await sql<{ id: string; access_token: string | null }>`select id, access_token from orders where user_id = ${userId} and request_id = ${data.requestId} limit 1`;
     if (existing[0]) return { orderId: existing[0].id, accessToken: existing[0].access_token ?? "" };
     const quote = await buildQuote(sql, data);
-    if (data.paymentMethod === "cod" && !quote.codAllowed) {
-      throw new Error("Cash on delivery is only for in-stock ready-made pieces, and only when the shop has enabled it.");
-    }
-    if (quote.requiresPrepay && data.paymentMethod === "cod") {
-      throw new Error("Custom and made-to-order pieces must be paid before they are made.");
-    }
     const taken: Array<{ kind: "stock" | "tier"; id: string; qty: number }> = [];
     let orderId = "";
     let couponUsed: string | null = null;
@@ -1106,7 +1098,7 @@ export const acceptQuote = createServerFn({ method: "POST" })
           .trim()
           .max(120)
           .refine((value) => value === "" || z.string().email().safeParse(value).success, "Enter a valid email, or leave it blank."),
-        paymentMethod: z.enum(["bank", "easypaisa", "jazzcash"]),
+        paymentMethod: z.enum(["bank", "easypaisa", "jazzcash", "cod"]),
       }),
       input,
     ),
@@ -1129,7 +1121,7 @@ export const acceptQuote = createServerFn({ method: "POST" })
     if (!inquiry || !allowed || inquiry.status !== "quoted" || !inquiry.quote_pkr) throw new Error("There is no open quotation to accept.");
     const settings = await loadSettings(sql);
     const ship = shippingFor({
-      method: data.paymentMethod,
+      method: "cod",
       shippingPkr: num(settings.shipping_pkr),
       freeOver: num(settings.free_shipping_over_pkr),
       subtotal: num(inquiry.quote_pkr),
@@ -1145,7 +1137,7 @@ export const acceptQuote = createServerFn({ method: "POST" })
       subtotal_pkr, discount_pkr, shipping_pkr, shipping_discount_pkr, total_pkr, shipping_note,
       customer_name, customer_phone, customer_email, address_line, address_city, address_notes, production_days, breakdown, access_token
     ) values (
-      ${orderId}, ${userId}, 'quote', 'awaiting', 'awaiting_payment', ${data.paymentMethod}, false,
+      ${orderId}, ${userId}, 'quote', 'awaiting', 'confirmed', 'cod', true,
       ${num(inquiry.quote_pkr)}, 0, ${ship.shippingPkr}, 0, ${total}, ${ship.note},
       ${data.address.name}, ${data.address.phone}, ${data.email}, ${data.address.line1}, ${data.address.city}, ${data.address.notes},
       ${num(inquiry.quote_days) || 14}, ${JSON.stringify({ inquiryId: inquiry.id })}::jsonb, ${accessToken}

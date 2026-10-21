@@ -4,8 +4,7 @@ import { toast } from "sonner";
 import { Button, Field, Panel, Price } from "@/components/site/ui";
 import { orderPhone, orderToken, rememberOrder, rememberPhone } from "@/lib/shop/access";
 import { customerStatus, paymentLabel, fulfillmentLabel, pkr, describePiece } from "@/lib/shop/format";
-import { compressImage } from "@/lib/shop/images";
-import { addReview, myOrder, submitProof } from "@/lib/shop/server";
+import { addReview, myOrder } from "@/lib/shop/server";
 
 export const Route = createFileRoute("/order/$id")({
   component: OrderPage,
@@ -15,7 +14,6 @@ function OrderPage() {
   const { id } = Route.useParams();
   const [order, setOrder] = useState<Awaited<ReturnType<typeof myOrder>> | undefined>(undefined);
   const [error, setError] = useState("");
-  const [note, setNote] = useState("");
   const [review, setReview] = useState("");
   const [phone, setPhone] = useState("");
   const [token, setToken] = useState("");
@@ -121,35 +119,6 @@ function OrderPage() {
         <p className="mt-2">{order.customerName}, {order.addressLine}, {order.addressCity}</p>
         {order.trackingNumber ? <p>Tracking {order.carrier} {order.trackingNumber}</p> : <p>Tracking appears when the parcel is handed to a courier.</p>}
       </Panel>
-      {!order.payOnDelivery && ["awaiting", "rejected", "verifying"].includes(order.paymentStatus) ? (
-        <form
-          className="mt-4 rounded-3xl bg-butter p-4"
-          onSubmit={(event) => {
-            event.preventDefault();
-            const file = (event.currentTarget.elements.namedItem("proof") as HTMLInputElement).files?.[0];
-            if (!file) return;
-            compressImage(file)
-              .then((image) => submitProof({ data: { orderId: order.id, image, note, token, phone } }))
-              .then(() => myOrder({ data: { id, token, phone } }))
-              .then((next) => {
-                setOrder(next);
-                toast.success("Receipt sent for verification. This does not mean it is paid.");
-              })
-              .catch((err: Error) => toast.error(err.message));
-          }}
-        >
-          <p className="font-medium">Upload payment proof</p>
-          <p className="text-sm text-cocoa">A screenshot is a claim. The order stays under verification until the shop confirms the money arrived. Production does not start before that.</p>
-          <input name="proof" type="file" accept="image/*" required className="mt-3 block" />
-          <input value={note} onChange={(event) => setNote(event.target.value)} placeholder="Reference number, if you have one" className="mt-2 min-h-11 w-full rounded-2xl border border-line bg-paper px-3" />
-          <Button type="submit" className="mt-3">Submit for verification</Button>
-        </form>
-      ) : null}
-      {order.proofs.length ? (
-        <ul className="mt-4 text-sm text-cocoa">
-          {order.proofs.map((proof) => <li key={proof.id}>{proof.created_at}: {proof.status} {proof.admin_note ? `— ${proof.admin_note}` : ""}</li>)}
-        </ul>
-      ) : null}
       {delivered ? (
         <form
           className="mt-6 space-y-2"

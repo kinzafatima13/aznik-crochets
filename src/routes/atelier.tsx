@@ -69,7 +69,7 @@ function Atelier() {
       return;
     }
     const timer = setTimeout(() => {
-      quoteCart({ data: { lines: [{ kind: "custom", design }], coupon: "", paymentMethod: "bank" } })
+      quoteCart({ data: { lines: [{ kind: "custom", design }], coupon: "", paymentMethod: "cod" } })
         .then((next) => {
           setQuote(next);
           setError("");

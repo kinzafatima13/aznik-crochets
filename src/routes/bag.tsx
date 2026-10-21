@@ -33,7 +33,7 @@ function BagPage() {
       data: {
         lines: lines.map((line) => line.input),
         coupon: "",
-        paymentMethod: "bank",
+        paymentMethod: "cod",
       },
     })
       .then((next) => {
@@ -80,11 +80,7 @@ function BagPage() {
             <div className="rounded-3xl bg-blush p-5 text-sm">
               <Row label="Pieces" value={quote.subtotalPkr} />
               <Row label="Delivery" value={quote.shippingPkr} />
-              {quote.shippingPkr === 0 ? (
-                <p className="mt-2 text-sage-deep">Delivery is free when you pay in advance. Cash on delivery, for in-stock ready-made pieces only, adds the courier charge at checkout.</p>
-              ) : (
-                <p className="mt-2 text-cocoa">{quote.shippingNote}</p>
-              )}
+              <p className="mt-2 text-cocoa">Cash on delivery. The courier charge is included in the total.</p>
               <p className="mt-2 text-xl">Estimated total <Price value={quote.totalPkr} /></p>
               <p className="text-cocoa">Final total is confirmed at checkout with your payment method. Prices come from the shop, not this page.</p>
             </div>

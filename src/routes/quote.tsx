@@ -94,7 +94,7 @@ function QuotePage() {
                             inquiryId: String(row.id),
                             token: inquiryToken(String(row.id)),
                             email: pay.email || form.email,
-                            paymentMethod: "bank",
+                            paymentMethod: "cod",
                             address: { ...pay, name: pay.name || form.name, phone: pay.phone || form.phone, save: false },
                           },
                         })
@@ -105,14 +105,14 @@ function QuotePage() {
                           .catch((error: Error) => toast.error(error.message));
                       }}
                     >
-                      <p className="text-sm">Accepting creates an order. Delivery is added to the quoted making price and shown on the order. Pay on that page. Production waits for verification.</p>
+                      <p className="text-sm">Accepting creates a cash-on-delivery order. The courier charge is added to the quoted price.</p>
                       <Field label="Name" value={pay.name} onChange={(event) => setPay({ ...pay, name: event.target.value })} required />
                       <Field label="Phone" value={pay.phone} onChange={(event) => setPay({ ...pay, phone: event.target.value })} required />
                       <Field label="Email" value={pay.email} onChange={(event) => setPay({ ...pay, email: event.target.value })} required />
                       <Field label="Address" value={pay.line1} onChange={(event) => setPay({ ...pay, line1: event.target.value })} required />
                       <Field label="City" value={pay.city} onChange={(event) => setPay({ ...pay, city: event.target.value })} required />
                       <div className="flex gap-2">
-                        <Button type="submit">Accept and pay</Button>
+                        <Button type="submit">Accept order</Button>
                         <Button type="button" variant="ghost" onClick={() => declineQuote({ data: { inquiryId: String(row.id), token: inquiryToken(String(row.id)) } }).then(() => inquiriesByToken({ data: { tokens: inquiryTokens() } }).then((guestRows) => setRows(guestRows)))}>Decline</Button>
                       </div>
                     </form>
