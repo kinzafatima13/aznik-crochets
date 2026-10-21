@@ -20,7 +20,7 @@ function SettingsPage() {
       <ShopForm initial={desk.settings} />
       <Panel>
         <h2 className="font-display text-2xl">Email</h2>
-        <p className="mt-2 text-sm text-cocoa">Customer and shop notes are saved inside the account and this desk. A real email service is not connected, so nothing is sent to an inbox. When you have a provider, its key belongs in the server environment, not in this form. {desk.subscribers} people are on the newsletter list.</p>
+        <p className="mt-2 text-sm text-cocoa">Order emails send only after a mailbox is connected. Create a new Gmail for the shop, then add SMTP_HOST, SMTP_USER, SMTP_PASS, and ORDER_FROM_EMAIL in the Vercel project. Until those exist, orders are saved here and no email is sent. {desk.subscribers} people are on the newsletter list.</p>
       </Panel>
       <Panel>
         <h2 className="font-display text-2xl">Online cards</h2>

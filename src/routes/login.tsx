@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button, Field, Panel } from "@/components/site/ui";
 import { GROK_PROVIDERS, authClient, signIn } from "@/lib/auth/client";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import { isShopOwner } from "@/lib/shop/owner";
 
 export const Route = createFileRoute("/login")({
   validateSearch: (search: Record<string, unknown>): { next: "/admin" | "/account" } => ({
@@ -21,7 +22,7 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   if (isPending) return <main className="min-h-[40vh]" />;
-  if (user) return <Navigate to={next} />;
+  if (user) return <Navigate to={isShopOwner(user.primaryEmail) ? "/admin" : next} />;
   return (
     <main className="mx-auto max-w-md px-4 py-12">
       <Panel>
@@ -58,7 +59,7 @@ function LoginPage() {
                 );
                 return;
               }
-              window.location.href = next;
+              window.location.href = isShopOwner(email) ? "/admin" : next;
             });
           }}
         >

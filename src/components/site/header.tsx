@@ -3,7 +3,9 @@ import { Heart, Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { SignedIn, SignedOut, UserButton } from "@/lib/auth/gates";
+import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { rehydrateCart, useCart } from "@/lib/shop/cart";
+import { isShopOwner } from "@/lib/shop/owner";
 import { blankShopSearch } from "@/lib/shop/search";
 import { lineQty } from "@/lib/shop/types";
 import { Wordmark } from "./ui";
@@ -22,6 +24,8 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const [ready, setReady] = useState(false);
   const count = useCart((state) => state.lines.reduce((sum, line) => sum + lineQty(line.input), 0));
+  const { user } = useCurrentUserState();
+  const owner = isShopOwner(user?.primaryEmail);
   useEffect(() => {
     rehydrateCart();
     setReady(true);
@@ -50,7 +54,7 @@ export function Header() {
             </Link>
           ))}
           <Link to="/shop" search={{ ...blankShopSearch, collection: "mystery" }} className="text-sm text-cocoa hover:text-berry">Mystery Gifts</Link>
-          <Link to="/admin" className="rounded-full bg-berry px-4 py-2 text-sm text-paper hover:bg-berry-deep">Shop desk</Link>
+          {owner ? <Link to="/admin" className="rounded-full bg-berry px-4 py-2 text-sm text-paper hover:bg-berry-deep">Desk</Link> : null}
         </nav>
         <form action="/shop" className="ml-auto hidden min-w-0 flex-1 md:block md:max-w-xs">
           <label className="relative block">
@@ -115,9 +119,11 @@ export function Header() {
                   Mystery Gifts
                 </Link>
               </nav>
-              <Link to="/admin" className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-berry px-5 text-sm text-paper">
-                Shop desk
-              </Link>
+              {owner ? (
+                <Link to="/admin" className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-berry px-5 text-sm text-paper">
+                  Desk
+                </Link>
+              ) : null}
               <p className="mt-6 text-sm text-cocoa">{chrome.settings.tagline}</p>
             </div>,
             document.body,
@@ -160,7 +166,6 @@ export function Footer() {
             <Link to="/story">Our story</Link>
             <Link to="/quote">Ask for a quotation</Link>
             <Link to="/track">Check an order</Link>
-            <Link to="/admin" className="font-medium text-berry">Shop desk</Link>
           </div>
         </div>
         <div>

@@ -5,6 +5,7 @@ import { optionalAuthMiddleware } from "@/lib/auth/optional";
 import { newAccessToken, phonesMatch } from "@/lib/shop/access";
 import { exportFilename, fieldsFromItem, filterLines, itemsCsv, orderMatches, summaryCsv, type ExportLine, type OrderFilter } from "@/lib/shop/csv";
 import { isAllowedImage } from "@/lib/shop/images";
+import { isShopOwner } from "@/lib/shop/owner";
 import { couponDiscount, shippingFor, type PayMethod } from "@/lib/shop/pricing";
 import type { LineInput, Quote } from "@/lib/shop/types";
 
@@ -69,8 +70,8 @@ async function notify(
 }
 
 async function assertAdmin(sql: Sql, userId: string) {
-  const rows = await sql<{ user_id: string }>`select user_id from shop_admins where user_id = ${userId} limit 1`;
-  if (!rows.length) throw new Error("Only the shop owner can open that.");
+  const rows = await sql<{ email: string }>`select email from "user" where id = ${userId} limit 1`;
+  if (!isShopOwner(rows[0]?.email)) throw new Error("Only the shop owner can open that.");
 }
 
 type Settings = {
@@ -832,6 +833,20 @@ export const placeOrder = createServerFn({ method: "POST" })
         body: `${data.address.name} · ${data.paymentMethod} · Rs. ${quote.totalPkr}`,
         orderId,
       });
+      if (data.email) {
+        const pieces = quote.lines.map((line) => line.title).join(", ") || "your pieces";
+        import("@/lib/shop/mail.server")
+          .then((mail) =>
+            mail.sendOrderEmail({
+              to: data.email,
+              orderId,
+              name: data.address.name,
+              pieces,
+              totalPkr: quote.totalPkr,
+            }),
+          )
+          .catch(() => undefined);
+      }
       return { orderId, accessToken };
     } catch (error) {
       if (orderId) {
@@ -1209,17 +1224,16 @@ export const adminSession = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
     const sql = await db();
-    const mine = await sql<{ user_id: string }>`select user_id from shop_admins where user_id = ${context.userId} limit 1`;
-    const any = await sql<{ user_id: string }>`select user_id from shop_admins limit 1`;
-    return { isAdmin: mine.length > 0, hasOwner: any.length > 0 };
+    const rows = await sql<{ email: string }>`select email from "user" where id = ${context.userId} limit 1`;
+    return { isAdmin: isShopOwner(rows[0]?.email), hasOwner: true };
   });
 
 export const claimShop = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
     const sql = await db();
-    const inserted = await sql<{ user_id: string }>`insert into shop_admins (user_id) select ${context.userId} where not exists (select 1 from shop_admins) returning user_id`;
-    if (!inserted.length) throw new Error("This boutique already has an owner.");
+    const rows = await sql<{ email: string }>`select email from "user" where id = ${context.userId} limit 1`;
+    if (!isShopOwner(rows[0]?.email)) throw new Error("This desk already has an owner.");
     return { ok: true };
   });
 
@@ -1335,6 +1349,38 @@ export const saveProduct = createServerFn({ method: "POST" })
       mystery_eligible = excluded.mystery_eligible, featured = excluded.featured, bestseller = excluded.bestseller,
       is_new = excluded.is_new, material_cost_pkr = excluded.material_cost_pkr`;
     return { id: data.id };
+  });
+
+export const updateStockPrice = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((input: unknown) =>
+    parse(
+      z.object({
+        id: z.string().trim().min(2).max(80),
+        pricePkr: z.number().int().min(100).max(500000),
+        stock: z.number().int().min(0).max(10000),
+      }),
+      input,
+    ),
+  )
+  .handler(async ({ data, context }) => {
+    const sql = await db();
+    await assertAdmin(sql, context.userId);
+    const updated = await sql<{ id: string }>`update products set price_pkr = ${data.pricePkr}, stock = ${data.stock} where id = ${data.id} returning id`;
+    if (!updated.length) throw new Error("That piece was not found.");
+    return { ok: true };
+  });
+
+export const removeProduct = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((input: unknown) => parse(z.object({ id: z.string().trim().min(2).max(80) }), input))
+  .handler(async ({ data, context }) => {
+    const sql = await db();
+    await assertAdmin(sql, context.userId);
+    await sql`delete from wishlists where product_id = ${data.id}`;
+    const removed = await sql<{ id: string }>`delete from products where id = ${data.id} returning id`;
+    if (!removed.length) throw new Error("That piece was not found.");
+    return { ok: true };
   });
 
 const OrderListSchema = z.object({

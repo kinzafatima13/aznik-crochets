@@ -1,9 +1,8 @@
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { Flower2, Inbox, LayoutDashboard, Package, Settings, ShoppingBag, Sparkles } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
-import { Button } from "@/components/site/ui";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
-import { adminSession, claimShop } from "@/lib/shop/server";
+import { adminSession } from "@/lib/shop/server";
 
 const links = [
   { to: "/admin", label: "Home", icon: LayoutDashboard, exact: true },
@@ -17,7 +16,6 @@ const links = [
 export function AdminGate({ children }: { children: ReactNode }) {
   const { user, isPending } = useCurrentUserState();
   const [session, setSession] = useState<{ isAdmin: boolean; hasOwner: boolean } | null>(null);
-  const navigate = useNavigate();
   const path = useRouterState({ select: (state) => state.location.pathname });
   useEffect(() => {
     if (!user) return;
@@ -28,7 +26,7 @@ export function AdminGate({ children }: { children: ReactNode }) {
     return (
       <main className="mx-auto max-w-lg px-4 py-16">
         <h1 className="font-display text-4xl">The shop desk</h1>
-        <p className="mt-3 text-cocoa">Sign in with email first. Then come back here and claim the boutique. The first account becomes the only admin.</p>
+        <p className="mt-3 text-cocoa">Sign in with the shop owner email. No one else can open this desk.</p>
         <Link to="/login" search={{ next: "/admin" }} className="mt-5 inline-flex min-h-11 items-center rounded-full bg-berry px-5 text-sm text-paper">Sign in</Link>
         <Link to="/" className="mt-6 block text-sm text-cocoa">Back to the shop</Link>
       </main>
@@ -38,14 +36,7 @@ export function AdminGate({ children }: { children: ReactNode }) {
     return (
       <main className="mx-auto max-w-lg px-4 py-16">
         <h1 className="font-display text-4xl">The shop desk</h1>
-        {session?.hasOwner ? (
-          <p className="mt-3 text-cocoa">This boutique already has an owner. Customer accounts cannot manage orders.</p>
-        ) : (
-          <>
-            <p className="mt-3 text-cocoa">No owner yet. The first signed-in person to claim it becomes the only admin. Do this with the account that will run Aznik Crochets.</p>
-            <Button className="mt-4" onClick={() => claimShop().then(() => navigate({ to: "/admin" })).then(() => window.location.reload())}>Claim this boutique</Button>
-          </>
-        )}
+        <p className="mt-3 text-cocoa">This desk is private. Only the shop owner can open it.</p>
         <Link to="/" className="mt-6 block text-sm text-berry">Back to the shop</Link>
       </main>
     );
