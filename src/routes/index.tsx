@@ -60,9 +60,9 @@ function Home() {
           {data.collections.filter((collection) => collection.id !== "mystery").slice(0, 6).map((collection) => (
             <Link key={collection.id} to="/collections/$slug" params={{ slug: collection.id }} className="relative overflow-hidden rounded-3xl">
               <img src={collection.image} alt="" className="aspect-[4/5] w-full object-cover" />
-              <span className="absolute inset-x-0 bottom-0 bg-ink/55 px-4 py-4 text-paper">
-                <span className="block font-display text-2xl">{collection.name}</span>
-                <span className="text-sm text-blush">{collection.blurb}</span>
+              <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink via-ink/75 to-transparent px-4 pt-10 pb-4 text-paper">
+                <span className="block font-display text-2xl leading-tight">{collection.name}</span>
+                <span className="mt-1 block text-sm text-blush">{collection.blurb}</span>
               </span>
             </Link>
           ))}

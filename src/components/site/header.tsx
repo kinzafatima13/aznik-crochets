@@ -1,6 +1,7 @@
 import { Link, useRouteContext, useRouterState } from "@tanstack/react-router";
 import { Heart, Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { SignedIn, SignedOut, UserButton } from "@/lib/auth/gates";
 import { rehydrateCart, useCart } from "@/lib/shop/cart";
 import { blankShopSearch } from "@/lib/shop/search";
@@ -26,6 +27,14 @@ export function Header() {
     setReady(true);
   }, []);
   useEffect(() => setOpen(false), [path]);
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
 
   return (
     <header className="sticky top-0 z-30 border-b border-line/80 bg-ivory/90 backdrop-blur">
@@ -54,8 +63,7 @@ export function Header() {
             />
           </label>
         </form>
-        <div className="ml-auto flex items-center gap-1 md:ml-2">
-          <Link to="/admin" className="rounded-full bg-berry px-3 py-2 text-sm text-paper hover:bg-berry-deep lg:hidden">Desk</Link>
+        <div className="ml-auto flex items-center md:ml-2">
           <Link to="/shop" search={blankShopSearch} className="grid min-h-11 min-w-11 place-items-center rounded-full md:hidden" aria-label="Search">
             <Search className="size-5" />
           </Link>
@@ -83,26 +91,38 @@ export function Header() {
           </SignedOut>
         </div>
       </div>
-      {open ? (
-        <div className="fixed inset-0 z-40 bg-ivory px-6 py-5 lg:hidden">
-          <div className="flex items-center justify-between">
-            <Wordmark />
-            <button type="button" className="grid min-h-11 min-w-11 place-items-center" aria-label="Close menu" onClick={() => setOpen(false)}>
-              <X />
-            </button>
-          </div>
-          <nav className="mt-8 flex flex-col gap-2">
-            <Link to="/admin" className="font-display text-4xl text-berry">Shop desk</Link>
-            {links.map((link) => (
-              <Link key={link.to} to={link.to} search={link.to === "/shop" ? blankShopSearch : undefined} className="font-display text-4xl">
-                {link.label}
+      {open
+        ? createPortal(
+            <div className="fixed inset-0 z-[80] flex flex-col overflow-y-auto bg-ivory px-6 py-5">
+              <div className="flex items-center justify-between">
+                <Wordmark />
+                <button type="button" className="grid min-h-11 min-w-11 place-items-center rounded-full" aria-label="Close menu" onClick={() => setOpen(false)}>
+                  <X />
+                </button>
+              </div>
+              <nav className="mt-6 flex flex-col border-t border-line">
+                {links.map((link) => (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    search={link.to === "/shop" ? blankShopSearch : undefined}
+                    className="border-b border-line py-4 font-display text-3xl leading-none"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                <Link to="/shop" search={{ ...blankShopSearch, collection: "mystery" }} className="border-b border-line py-4 font-display text-3xl leading-none">
+                  Mystery Gifts
+                </Link>
+              </nav>
+              <Link to="/admin" className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-berry px-5 text-sm text-paper">
+                Shop desk
               </Link>
-            ))}
-            <Link to="/shop" search={{ ...blankShopSearch, collection: "mystery" }} className="font-display text-4xl">Mystery Gifts</Link>
-          </nav>
-          <p className="mt-8 text-sm text-cocoa">{chrome.settings.tagline}</p>
-        </div>
-      ) : null}
+              <p className="mt-6 text-sm text-cocoa">{chrome.settings.tagline}</p>
+            </div>,
+            document.body,
+          )
+        : null}
     </header>
   );
 }

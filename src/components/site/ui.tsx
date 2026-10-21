@@ -103,9 +103,9 @@ export function ProductCard({
         />
       </div>
       {product.mystery ? <p className="mt-3 text-xs uppercase tracking-widest text-berry">Mystery gift · contents secret</p> : null}
-      <div className="mt-3 flex items-start justify-between gap-3">
-        <p className="font-display text-xl leading-tight">{product.name}</p>
-        <Price value={product.pricePkr} className="shrink-0 text-sm" />
+      <div className="mt-3 space-y-1">
+        <p className="font-display text-lg leading-tight">{product.name}</p>
+        <Price value={product.pricePkr} className="text-sm text-cocoa" />
       </div>
     </Link>
   );
