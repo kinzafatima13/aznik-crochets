@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/site/ui";
-import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { adminSession, claimShop } from "@/lib/shop/server";
 
@@ -23,7 +22,16 @@ export function AdminGate({ children }: { children: ReactNode }) {
     adminSession().then(setSession).catch(() => setSession({ isAdmin: false, hasOwner: true }));
   }, [user?.id]);
   if (isPending || (user && !session)) return <main className="grid min-h-screen place-items-center bg-ivory text-cocoa">Opening the desk…</main>;
-  if (!user) return <RedirectToSignIn />;
+  if (!user) {
+    return (
+      <main className="mx-auto max-w-lg px-4 py-16">
+        <h1 className="font-display text-4xl">The shop desk</h1>
+        <p className="mt-3 text-cocoa">Sign in with email first. Then come back here and claim the boutique. The first account becomes the only admin.</p>
+        <Link to="/login" search={{ next: "/admin" }} className="mt-5 inline-flex min-h-11 items-center rounded-full bg-berry px-5 text-sm text-paper">Sign in</Link>
+        <Link to="/" className="mt-6 block text-sm text-cocoa">Back to the shop</Link>
+      </main>
+    );
+  }
   if (!session?.isAdmin) {
     return (
       <main className="mx-auto max-w-lg px-4 py-16">

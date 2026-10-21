@@ -41,6 +41,7 @@ export function Header() {
             </Link>
           ))}
           <Link to="/shop" search={{ ...blankShopSearch, collection: "mystery" }} className="text-sm text-cocoa hover:text-berry">Mystery Gifts</Link>
+          <Link to="/admin" className="rounded-full bg-berry px-4 py-2 text-sm text-paper hover:bg-berry-deep">Shop desk</Link>
         </nav>
         <form action="/shop" className="ml-auto hidden min-w-0 flex-1 md:block md:max-w-xs">
           <label className="relative block">
@@ -54,6 +55,7 @@ export function Header() {
           </label>
         </form>
         <div className="ml-auto flex items-center gap-1 md:ml-2">
+          <Link to="/admin" className="rounded-full bg-berry px-3 py-2 text-sm text-paper hover:bg-berry-deep lg:hidden">Desk</Link>
           <Link to="/shop" search={blankShopSearch} className="grid min-h-11 min-w-11 place-items-center rounded-full md:hidden" aria-label="Search">
             <Search className="size-5" />
           </Link>
@@ -75,7 +77,7 @@ export function Header() {
             <UserButton />
           </SignedIn>
           <SignedOut>
-            <Link to="/login" className="hidden text-sm text-cocoa sm:inline">
+            <Link to="/login" search={{ next: "/account" }} className="hidden text-sm text-cocoa sm:inline">
               Sign in
             </Link>
           </SignedOut>
@@ -90,6 +92,7 @@ export function Header() {
             </button>
           </div>
           <nav className="mt-8 flex flex-col gap-2">
+            <Link to="/admin" className="font-display text-4xl text-berry">Shop desk</Link>
             {links.map((link) => (
               <Link key={link.to} to={link.to} search={link.to === "/shop" ? blankShopSearch : undefined} className="font-display text-4xl">
                 {link.label}
@@ -137,6 +140,7 @@ export function Footer() {
             <Link to="/story">Our story</Link>
             <Link to="/quote">Ask for a quotation</Link>
             <Link to="/track">Check an order</Link>
+            <Link to="/admin" className="font-medium text-berry">Shop desk</Link>
           </div>
         </div>
         <div>

@@ -29,7 +29,7 @@ function AccountPage() {
     <main className="mx-auto max-w-3xl px-4 py-10">
       <h1 className="font-display text-5xl">Hello{user.displayName ? `, ${user.displayName}` : ""}</h1>
       <p className="text-cocoa">{user.primaryEmail}</p>
-      {admin ? <Link to="/admin" className="mt-4 inline-block"><Button variant="sage">Open the shop desk</Button></Link> : <Link to="/admin" className="mt-4 inline-block text-sm text-berry">Claim or open the shop desk</Link>}
+      {admin ? <Link to="/admin" className="mt-4 inline-block"><Button variant="sage">Open the shop desk</Button></Link> : <Link to="/admin" className="mt-4 inline-block"><Button>Open the shop desk</Button></Link>}
       <h2 className="mt-8 font-display text-3xl">Orders</h2>
       <div className="mt-3 space-y-3">
         {orders.length === 0 ? <p className="text-cocoa">No orders yet.</p> : orders.map((order) => (
