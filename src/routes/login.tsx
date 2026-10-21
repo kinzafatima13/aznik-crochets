@@ -1,5 +1,5 @@
 import { Navigate, createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { Button, Field, Panel } from "@/components/site/ui";
 import { GROK_PROVIDERS, authClient, signIn } from "@/lib/auth/client";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
@@ -35,7 +35,7 @@ function LoginPage() {
   }
   if (user) return <Navigate to={isShopOwner(user.primaryEmail) ? "/admin" : next} />;
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (submitting) return;
     setError("");
