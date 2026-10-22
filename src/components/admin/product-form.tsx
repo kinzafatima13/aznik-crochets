@@ -50,7 +50,7 @@ export function ProductForm({ initial }: { initial: ProductFormValue }) {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "")
       .slice(0, 48);
-    return slug.length >= 2 ? slug : "";
+    return slug.length >= 2 ? slug : "handmade-piece";
   }
 
   return (
@@ -78,6 +78,8 @@ export function ProductForm({ initial }: { initial: ProductFormValue }) {
       }}
     >
       <Field label="Name" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value, id: initial.id || slugFrom(event.target.value) })} />
+      <Field label="Short link name" value={form.id} onChange={(event) => setForm({ ...form, id: event.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").slice(0, 48) })} />
+      <p className="-mt-2 text-xs text-cocoa">Used in the product link, for example: daisy-clip. This fills automatically from the name, and you can edit it.</p>
       <Area label="Description" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} />
       <label className="text-sm">Category
         <select className="mt-1 min-h-11 w-full rounded-2xl border border-line bg-paper px-3" value={form.categoryId} onChange={(event) => setForm({ ...form, categoryId: event.target.value })}>
