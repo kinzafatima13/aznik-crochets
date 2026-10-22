@@ -13,12 +13,23 @@ function CollectionsPage() {
       <h1 className="font-display text-5xl">Collections</h1>
       <p className="mt-2 max-w-xl text-cocoa">Little worlds of colour. Each one is a mood you can shop.</p>
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {data.categories.map((category) => (
+          <Link key={\`type-\${category.id}\`} to="/collections/$slug" params={{ slug: category.id }} className="overflow-hidden rounded-3xl bg-paper shadow-soft">
+            <img src={category.image} alt="" loading="lazy" decoding="async" className="aspect-[4/3] w-full object-cover" />
+            <span className="block p-4">
+              <span className="font-display text-2xl">{category.name}</span>
+              <span className="mt-1 block text-sm text-cocoa">{category.blurb}</span>
+              <span className="mt-2 block text-xs uppercase tracking-wide text-cocoa">Shop by product type</span>
+            </span>
+          </Link>
+        ))}
         {data.collections.map((collection) => (
-          <Link key={collection.id} to="/collections/$slug" params={{ slug: collection.id }} className="overflow-hidden rounded-3xl bg-paper shadow-soft">
-            <img src={collection.image} alt="" className="aspect-[4/3] w-full object-cover" />
+          <Link key={\`theme-\${collection.id}\`} to="/collections/$slug" params={{ slug: collection.id }} className="overflow-hidden rounded-3xl bg-paper shadow-soft">
+            <img src={collection.image} alt="" loading="lazy" decoding="async" className="aspect-[4/3] w-full object-cover" />
             <span className="block p-4">
               <span className="font-display text-2xl">{collection.name}</span>
               <span className="mt-1 block text-sm text-cocoa">{collection.blurb}</span>
+              <span className="mt-2 block text-xs uppercase tracking-wide text-cocoa">Shop by theme</span>
             </span>
           </Link>
         ))}
