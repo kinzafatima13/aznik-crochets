@@ -1293,11 +1293,11 @@ export const adminOverview = createServerFn({ method: "GET" })
   });
 
 const ProductSchema = z.object({
-  id: z.string().trim().min(2).max(80).regex(/^[a-z0-9-]+$/, "Use a short lowercase id, like daisy-clip."),
-  name: z.string().trim().min(2).max(80),
-  description: z.string().trim().min(10).max(2000),
-  categoryId: z.string().min(2).max(40),
-  collectionId: z.string().min(2).max(40),
+  id: z.string().trim().min(2, "The product needs a short link name.").max(80).regex(/^[a-z0-9-]+$/, "Use a short lowercase id, like daisy-clip."),
+  name: z.string().trim().min(2, "Give the piece a name, at least 2 letters.").max(80),
+  description: z.string().trim().min(10, "Add a short description, at least a sentence.").max(2000),
+  categoryId: z.string().trim().min(2, "Choose a category.").max(40),
+  collectionId: z.string().trim().min(2, "Choose a collection.").max(40),
   pricePkr: z.number().int().min(100).max(500000),
   status: z.enum(["published", "draft", "archived"]),
   madeToOrder: z.boolean(),

@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button, Field, Area } from "@/components/site/ui";
 import { compressImage } from "@/lib/shop/images";
-import { saveProduct } from "@/lib/shop/server";
+import { getChrome, saveProduct } from "@/lib/shop/server";
 
 type ProductFormValue = {
   id: string;
@@ -34,19 +34,61 @@ export function ProductForm({ initial }: { initial: ProductFormValue }) {
   const [colorName, setColorName] = useState("Blush");
   const [colorHex, setColorHex] = useState("#F3C1C8");
   const [size, setSize] = useState("One size");
+  const [lists, setLists] = useState<{ categories: Array<{ id: string; name: string }>; collections: Array<{ id: string; name: string }> }>({
+    categories: [],
+    collections: [],
+  });
+  useEffect(() => {
+    getChrome()
+      .then((chrome) => setLists({ categories: chrome.categories, collections: chrome.collections }))
+      .catch(() => undefined);
+  }, []);
+
+  function slugFrom(name: string) {
+    const slug = name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 48);
+    return slug.length >= 2 ? slug : "";
+  }
+
   return (
     <form
       className="grid gap-3"
       onSubmit={(event) => {
         event.preventDefault();
-        saveProduct({ data: form }).then(() => toast.success("Saved to the shop")).catch((error: Error) => toast.error(error.message));
+        const name = form.name.trim();
+        const id = (form.id.trim() || slugFrom(name)).toLowerCase();
+        if (name.length < 2) {
+          toast.error("Give the piece a name, at least 2 letters.");
+          return;
+        }
+        if (!/^[a-z0-9-]+$/.test(id) || id.length < 2) {
+          toast.error("The name needs letters or numbers so the shop can save a link, like daisy-clip.");
+          return;
+        }
+        const images = form.images.filter((image) => image.startsWith("data:image/") || image.startsWith("/photos/"));
+        saveProduct({ data: { ...form, id, name, images } })
+          .then(() => {
+            setForm((current) => ({ ...current, id, name }));
+            toast.success("Saved to the shop");
+          })
+          .catch((error: Error) => toast.error(error.message));
       }}
     >
-      <Field label="Id" value={form.id} onChange={(event) => setForm({ ...form, id: event.target.value })} />
-      <Field label="Name" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
+      <Field label="Name" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value, id: initial.id || slugFrom(event.target.value) })} />
       <Area label="Description" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} />
-      <Field label="Category id" value={form.categoryId} onChange={(event) => setForm({ ...form, categoryId: event.target.value })} />
-      <Field label="Collection id" value={form.collectionId} onChange={(event) => setForm({ ...form, collectionId: event.target.value })} />
+      <label className="text-sm">Category
+        <select className="mt-1 min-h-11 w-full rounded-2xl border border-line bg-paper px-3" value={form.categoryId} onChange={(event) => setForm({ ...form, categoryId: event.target.value })}>
+          {lists.categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+        </select>
+      </label>
+      <label className="text-sm">Collection
+        <select className="mt-1 min-h-11 w-full rounded-2xl border border-line bg-paper px-3" value={form.collectionId} onChange={(event) => setForm({ ...form, collectionId: event.target.value })}>
+          {lists.collections.map((collection) => <option key={collection.id} value={collection.id}>{collection.name}</option>)}
+        </select>
+      </label>
       <Field label="Price PKR" type="number" value={form.pricePkr} onChange={(event) => setForm({ ...form, pricePkr: Number(event.target.value) })} />
       <label className="text-sm">Status
         <select className="mt-1 min-h-11 w-full rounded-2xl border border-line bg-paper px-3" value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value as ProductFormValue["status"] })}>
@@ -87,7 +129,12 @@ export function ProductForm({ initial }: { initial: ProductFormValue }) {
           compressImage(file).then((image) => setForm((current) => ({ ...current, images: [...current.images, image].slice(0, 4) }))).catch((error: Error) => toast.error(error.message));
         }} />
       </label>
-      <div className="flex gap-2">{form.images.map((image) => <img key={image.slice(0, 32)} src={image} alt="" className="h-16 w-16 rounded-xl object-cover" />)}</div>
+      <div className="flex flex-wrap gap-2">{form.images.map((image, index) => (
+        <div key={`${image.slice(0, 24)}-${index}`} className="relative">
+          <img src={image} alt="" className="h-16 w-16 rounded-xl object-cover" />
+          <button type="button" className="absolute -top-2 -right-2 grid size-6 place-items-center rounded-full bg-berry text-xs text-paper" onClick={() => setForm({ ...form, images: form.images.filter((_, item) => item !== index) })}>×</button>
+        </div>
+      ))}</div>
       <Button type="submit">Save product</Button>
     </form>
   );
