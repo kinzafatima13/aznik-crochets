@@ -31,7 +31,7 @@ function Home() {
             <Link to="/atelier"><Button variant="ghost">Design Your Own</Button></Link>
           </div>
         </div>
-        <img src={data.settings.heroImage} alt="A table of handmade crochet pieces and a wrapped gift" className="aspect-video w-full rounded-3xl object-cover shadow-soft" />
+        <img src={data.settings.heroImage} alt="A table of handmade crochet pieces and a wrapped gift" loading="eager" fetchPriority="high" decoding="async" className="aspect-video w-full rounded-3xl object-cover shadow-soft" />
       </section>
 
       <section className="mx-auto max-w-6xl px-4">
@@ -44,7 +44,7 @@ function Home() {
               search={category.id === "custom" ? undefined : { ...blankShopSearch, category: category.id }}
               className="overflow-hidden rounded-3xl bg-paper shadow-soft"
             >
-              <img src={category.image} alt="" className="aspect-square w-full object-cover" />
+              <img src={category.image} alt="" loading="lazy" decoding="async" className="aspect-square w-full object-cover" />
               <span className="block px-3 py-3 text-sm">{category.name}</span>
             </Link>
           ))}
@@ -59,7 +59,7 @@ function Home() {
         <div className="mt-6 grid gap-4 md:grid-cols-3">
           {data.collections.filter((collection) => collection.id !== "mystery").slice(0, 6).map((collection) => (
             <Link key={collection.id} to="/collections/$slug" params={{ slug: collection.id }} className="relative overflow-hidden rounded-3xl">
-              <img src={collection.image} alt="" className="aspect-[4/5] w-full object-cover" />
+              <img src={collection.image} alt="" loading="lazy" decoding="async" className="aspect-[4/5] w-full object-cover" />
               <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink via-ink/75 to-transparent px-4 pt-10 pb-4 text-paper">
                 <span className="block font-display text-2xl leading-tight">{collection.name}</span>
                 <span className="mt-1 block text-sm text-blush">{collection.blurb}</span>
@@ -113,7 +113,7 @@ function Home() {
         <h2 className="font-display text-4xl">From the worktable</h2>
         <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
           {["/photos/gallery.jpg", "/photos/bouquet.jpg", "/photos/scarf.jpg", "/photos/bunny.jpg", "/photos/cushion.jpg", "/photos/fairy.jpg", "/photos/mystery.jpg", "/photos/tote.jpg"].map((src) => (
-            <img key={src} src={src} alt="Handmade crochet in the Aznik studio" className="aspect-[3/4] w-full rounded-3xl object-cover" />
+            <img key={src} src={src} alt="Handmade crochet in the Aznik studio" loading="lazy" decoding="async" className="aspect-[3/4] w-full rounded-3xl object-cover" />
           ))}
         </div>
       </section>
