@@ -14,7 +14,7 @@ function CollectionsPage() {
       <p className="mt-2 max-w-xl text-cocoa">Little worlds of colour. Each one is a mood you can shop.</p>
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {data.categories.map((category) => (
-          <Link key={\`type-\${category.id}\`} to="/collections/$slug" params={{ slug: category.id }} className="overflow-hidden rounded-3xl bg-paper shadow-soft">
+          <Link key={"type-" + category.id} to="/collections/$slug" params={{ slug: category.id }} className="overflow-hidden rounded-3xl bg-paper shadow-soft">
             <img src={category.image} alt="" loading="lazy" decoding="async" className="aspect-[4/3] w-full object-cover" />
             <span className="block p-4">
               <span className="font-display text-2xl">{category.name}</span>
@@ -24,7 +24,7 @@ function CollectionsPage() {
           </Link>
         ))}
         {data.collections.map((collection) => (
-          <Link key={\`theme-\${collection.id}\`} to="/collections/$slug" params={{ slug: collection.id }} className="overflow-hidden rounded-3xl bg-paper shadow-soft">
+          <Link key={"theme-" + collection.id} to="/collections/$slug" params={{ slug: collection.id }} className="overflow-hidden rounded-3xl bg-paper shadow-soft">
             <img src={collection.image} alt="" loading="lazy" decoding="async" className="aspect-[4/3] w-full object-cover" />
             <span className="block p-4">
               <span className="font-display text-2xl">{collection.name}</span>
