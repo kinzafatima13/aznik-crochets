@@ -1,14 +1,18 @@
-export async function compressImage(file: File, max = 960): Promise<string> {
+export async function compressImage(file: File, max = 720): Promise<string> {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");
   canvas.width = Math.max(1, Math.round(bitmap.width * scale));
   canvas.height = Math.max(1, Math.round(bitmap.height * scale));
   const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Could not read that image.");
+  if (!ctx) {
+    bitmap.close();
+    throw new Error("Could not read that image.");
+  }
   ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  const url = canvas.toDataURL("image/jpeg", 0.72);
-  if (url.length > 420_000) throw new Error("That photo is still too heavy. Try a smaller one.");
+  bitmap.close();
+  const url = canvas.toDataURL("image/jpeg", 0.66);
+  if (url.length > 260_000) throw new Error("That photo is still too heavy. Try a smaller one.");
   return url;
 }
 
