@@ -152,7 +152,7 @@ type ProductRow = {
   mystery_tier_id?: string | null;
 };
 
-function card(row: ProductRow, withCost = false) {
+function card(row: ProductRow, withCost = false, includeGallery = true) {
   const images = asArray<string>(row.images);
   return {
     id: row.id,
@@ -169,7 +169,7 @@ function card(row: ProductRow, withCost = false) {
     care: row.care,
     shippingNote: row.shipping_note,
     image: images[0] ?? "/photos/hero.jpg",
-    images,
+    images: includeGallery ? images : [],
     colors: asArray<{ name: string; hex: string }>(row.colors),
     sizes: asArray<string>(row.sizes),
     customizable: flag(row.customizable),
@@ -588,7 +588,7 @@ export const getHome = createServerFn({ method: "GET" }).handler(async () => {
     settings: publicSettings(settings),
     categories,
     collections,
-    products: products.map((row) => card(row)),
+    products: products.map((row) => card(row, false, false)),
     tiers: tiers.map((tier) => ({
       id: tier.id,
       name: tier.name,
@@ -639,7 +639,7 @@ export const getCatalog = createServerFn({ method: "GET" })
       active: boolean;
     }>`select id, name, blurb, price_pkr, value_note, categories, exclusions, qty_available, color_families, styles, free_delivery, requires_prepay, active from mystery_tiers`).map((tier) => tierCard(tier));
     const products = (await sql<ProductRow>`select * from products where status = 'published'`)
-      .map((row) => withMystery(card(row), tiers, flag(settings.mystery_free_delivery)))
+      .map((row) => withMystery(card(row, false, false), tiers, flag(settings.mystery_free_delivery)))
       .filter((product) => product !== null);
     let list = products.filter((product) => {
       if (data.category && product.categoryId !== data.category) return false;
@@ -688,7 +688,7 @@ export const getProduct = createServerFn({ method: "GET" })
     const shaped = withMystery(card(product), tiers, flag(settings.mystery_free_delivery));
     if (!shaped) return null;
     const related = (await sql<ProductRow>`select * from products where status = 'published' and (category_id = ${product.category_id} or collection_id = ${product.collection_id}) and id <> ${product.id} limit 8`)
-      .map((row) => withMystery(card(row), tiers, flag(settings.mystery_free_delivery)))
+      .map((row) => withMystery(card(row, false, false), tiers, flag(settings.mystery_free_delivery)))
       .filter((item) => item !== null)
       .slice(0, 4);
     const reviews = await sql<{ rating: number; body: string; author_name: string }>`select rating, body, author_name from reviews where product_id = ${product.id} order by created_at desc limit 4`;
