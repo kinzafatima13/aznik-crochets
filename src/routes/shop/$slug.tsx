@@ -34,12 +34,12 @@ function ProductPage() {
   return (
     <main className="mx-auto grid max-w-6xl gap-8 px-4 py-8 lg:grid-cols-2">
       <div>
-        <img src={image || product.image} alt={product.name} className="aspect-square w-full rounded-3xl object-cover" />
+        <img src={image || product.image} alt={product.name} loading="eager" fetchPriority="high" decoding="async" className="aspect-square w-full rounded-3xl object-cover" />
         {product.images.length > 1 ? (
           <div className="mt-3 flex gap-2">
             {product.images.map((src) => (
               <button key={src} type="button" onClick={() => setImage(src)} className="overflow-hidden rounded-2xl">
-                <img src={src} alt="" className="h-16 w-16 object-cover" />
+                <img src={src} alt="" loading="lazy" decoding="async" className="h-16 w-16 object-cover" />
               </button>
             ))}
           </div>
