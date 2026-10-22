@@ -99,6 +99,8 @@ export function ProductCard({
         <img
           src={product.image}
           alt={product.name}
+          loading="lazy"
+          decoding="async"
           className="aspect-square w-full object-cover motion-safe:transition motion-safe:duration-300 motion-safe:group-hover:scale-105"
         />
       </div>
