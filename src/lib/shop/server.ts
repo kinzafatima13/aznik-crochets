@@ -1188,6 +1188,30 @@ export const declineQuote = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const submitPublicReview = createServerFn({ method: "POST" })
+  .validator((input: unknown) =>
+    parse(
+      z.object({
+        productId: z.string().min(1).max(80),
+        rating: z.number().int().min(1).max(5),
+        body: z.string().trim().min(4).max(800),
+        authorName: z.string().trim().min(1).max(60),
+        image: z.string().max(500_000).optional().default(""),
+      }),
+      input,
+    ),
+  )
+  .handler(async ({ data }) => {
+    const sql = await db();
+    const products = await sql<{ id: string }>`select id from products where id = ${data.productId} and status = 'published' limit 1`;
+    if (!products[0]) throw new Error("This product is not available for review.");
+    assertImage(data.image);
+    await sql`insert into reviews (id, user_id, order_id, product_id, rating, body, author_name, image) values (
+      ${nid("rv")}, null, null, ${data.productId}, ${data.rating}, ${data.body}, ${data.authorName}, ${data.image || null}
+    )`;
+    return { ok: true };
+  });
+
 export const addReview = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator((input: unknown) =>
