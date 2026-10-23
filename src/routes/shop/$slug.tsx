@@ -82,7 +82,7 @@ function ProductPage() {
                 <label className="block text-sm text-cocoa">Colour you'd like
                   <input value={customColorName} onChange={(event) => setCustomColorName(event.target.value.slice(0, 40))} maxLength={40} placeholder="e.g. navy blue, mustard, lavender" className="mt-1 min-h-11 w-full rounded-xl border border-line bg-paper px-3" />
                 </label>
-                <p className="mt-2 text-xs text-cocoa">This is a colour request, not a confirmed yarn match. We’ll confirm availability and any price difference before making it.</p>
+                <p className="mt-2 text-xs text-cocoa">This is a colour request, not a confirmed yarn match. We’ll confirm whether the colour is available before making it.</p>
               </div>
             ) : null}
           </div>
@@ -125,6 +125,7 @@ function ProductPage() {
           </div>
         ) : (
         <>
+        {product.sizes.length ? <p className="mt-4 mb-2 text-sm text-cocoa">Choose a size</p> : null}
         <div className="mt-3 flex flex-wrap gap-2">
           {product.sizes.map((option) => (
             <button key={option} type="button" onClick={() => setSize(option)} className={`min-h-11 rounded-full border px-4 ${size === option ? "border-berry bg-blush" : "border-line bg-paper"}`}>{option}</button>
