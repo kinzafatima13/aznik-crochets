@@ -55,7 +55,9 @@ function Root() {
           )}
           {!admin && (
             <a
-              href="https://wa.me/92319558199?text=Hi!%20I%20would%20like%20to%20place%20an%20order%20with%20Aznik%20Crochets."
+          
+href="https://wa.me/923195581899?text=Hi!%20I%20would%20like%20to%20place%20an%20order%20with%20Aznik%20Crochets."
+
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Order on WhatsApp"
