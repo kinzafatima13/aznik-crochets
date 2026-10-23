@@ -84,38 +84,41 @@ function CollectionCoverForm() {
   return (
     <Panel>
       <h2 className="font-display text-2xl">Collection cover images</h2>
-      <p className="mt-2 text-sm text-cocoa">Choose a dedicated cover for each collection. These images are saved separately from product photos, so deleting a product will not change its collection cover. Upload a JPG, PNG, or WebP; the image is compressed before saving.</p>
+      <p className="mt-2 text-sm text-cocoa">Choose a dedicated cover for any collection. Covers are independent of product photos. All collections from the shop are listed below.</p>
       {loading ? <p className="mt-4 text-sm text-cocoa">Loading collections…</p> : (
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          {collections.map((collection) => {
-            const preview = drafts[collection.id] ?? collection.image;
-            return (
-              <article key={collection.id} className="rounded-2xl border border-line bg-paper p-3">
-                <img src={preview} alt={`${collection.name} cover preview`} className="aspect-[4/3] w-full rounded-xl object-cover" />
-                <h3 className="mt-3 font-display text-xl">{collection.name}</h3>
-                <label className="mt-3 block text-sm">
-                  Upload a separate cover
-                  <input
-                    className="mt-2 block w-full text-sm file:mr-3 file:rounded-full file:border-0 file:bg-berry file:px-4 file:py-2 file:text-white"
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    onChange={(event) => { void chooseImage(collection.id, event.currentTarget.files?.[0]); event.currentTarget.value = ""; }}
-                  />
-                </label>
-                <button
-                  type="button"
-                  disabled={!drafts[collection.id]}
-                  onClick={() => void saveCover(collection)}
-                  className="mt-3 min-h-10 rounded-full bg-berry px-4 text-sm text-paper disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Save cover
-                </button>
-                {drafts[collection.id] ? <p className="mt-2 text-xs text-cocoa">New cover selected — save to publish it.</p> : null}
-              </article>
-            );
-          })}
-          {collections.length === 0 ? <p className="text-sm text-cocoa">No collections were found.</p> : null}
-        </div>
+        <>
+          <p className="mt-3 text-xs text-cocoa">{collections.length} collection{collections.length === 1 ? "" : "s"} available</p>
+          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {collections.map((collection) => {
+              const preview = drafts[collection.id] ?? collection.image;
+              return (
+                <article key={collection.id} className="min-w-0 rounded-xl border border-line bg-paper p-3">
+                  <img src={preview} alt={`${collection.name} cover preview`} className="h-24 w-full rounded-lg object-cover" />
+                  <h3 className="mt-2 truncate font-display text-lg" title={collection.name}>{collection.name}</h3>
+                  <label className="mt-2 block text-xs text-cocoa">
+                    Choose cover image
+                    <input
+                      className="mt-1 block w-full min-w-0 text-xs file:mr-2 file:rounded-full file:border-0 file:bg-berry file:px-3 file:py-1.5 file:text-white"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={(event) => { void chooseImage(collection.id, event.currentTarget.files?.[0]); event.currentTarget.value = ""; }}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    disabled={!drafts[collection.id]}
+                    onClick={() => void saveCover(collection)}
+                    className="mt-2 min-h-9 rounded-full bg-berry px-4 text-sm text-paper disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Save cover
+                  </button>
+                  {drafts[collection.id] ? <p className="mt-1 text-xs text-cocoa">Selected — save to publish.</p> : null}
+                </article>
+              );
+            })}
+            {collections.length === 0 ? <p className="text-sm text-cocoa">No collections were found in the shop database.</p> : null}
+          </div>
+        </>
       )}
     </Panel>
   );
