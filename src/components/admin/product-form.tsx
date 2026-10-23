@@ -113,17 +113,58 @@ export function ProductForm({ initial }: { initial: ProductFormValue }) {
         <label><input type="checkbox" checked={form.bestseller} onChange={(event) => setForm({ ...form, bestseller: event.target.checked })} /> Bestseller</label>
         <label><input type="checkbox" checked={form.isNew} onChange={(event) => setForm({ ...form, isNew: event.target.checked })} /> New</label>
       </div>
-      <div className="flex gap-2">
-        <input value={colorName} onChange={(event) => setColorName(event.target.value)} className="min-h-11 rounded-2xl border border-line px-3" />
-        <input value={colorHex} onChange={(event) => setColorHex(event.target.value)} className="min-h-11 rounded-2xl border border-line px-3" />
-        <Button type="button" variant="ghost" onClick={() => setForm({ ...form, colors: [...form.colors, { name: colorName, hex: colorHex }] })}>Add colour</Button>
-      </div>
-      <p className="text-sm">{form.colors.map((color) => color.name).join(", ") || "No colours yet"}</p>
-      <div className="flex gap-2">
-        <input value={size} onChange={(event) => setSize(event.target.value)} className="min-h-11 rounded-2xl border border-line px-3" />
-        <Button type="button" variant="ghost" onClick={() => setForm({ ...form, sizes: [...form.sizes, size] })}>Add size</Button>
-      </div>
-      <p className="text-sm">{form.sizes.join(", ")}</p>
+      <section className="space-y-3 rounded-2xl border border-line p-4">
+        <div>
+          <h2 className="font-display text-2xl">Available colours</h2>
+          <p className="text-sm text-cocoa">Customers can choose from these colours on the product page. Add up to 8.</p>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+          <label className="text-sm">Colour name
+            <input value={colorName} onChange={(event) => setColorName(event.target.value)} placeholder="e.g. Sage green" maxLength={40} className="mt-1 min-h-11 w-full rounded-xl border border-line bg-paper px-3" />
+          </label>
+          <label className="text-sm">Swatch
+            <input type="color" aria-label="Colour swatch" value={colorHex} onChange={(event) => setColorHex(event.target.value)} className="mt-1 block h-11 w-16 rounded-xl border border-line bg-paper p-1" />
+          </label>
+          <div className="self-end">
+            <Button type="button" variant="ghost" disabled={!colorName.trim() || form.colors.length >= 8 || form.colors.some((item) => item.name.toLowerCase() === colorName.trim().toLowerCase())} onClick={() => {
+              const next = { name: colorName.trim(), hex: colorHex };
+              setForm((current) => ({ ...current, colors: [...current.colors, next] }));
+              setColorName("");
+            }}>Add colour</Button>
+          </div>
+        </div>
+        {form.colors.length ? <ul className="flex flex-wrap gap-2">{form.colors.map((color) => (
+          <li key={color.name} className="flex items-center gap-2 rounded-full border border-line bg-paper py-1 pl-2 pr-1 text-sm">
+            <span aria-hidden="true" className="size-4 rounded-full border border-line" style={{ backgroundColor: color.hex }} />
+            {color.name}
+            <button type="button" aria-label={`Remove ${color.name}`} onClick={() => setForm((current) => ({ ...current, colors: current.colors.filter((item) => item.name !== color.name) }))} className="grid size-7 place-items-center rounded-full text-berry">×</button>
+          </li>
+        ))}</ul> : <p className="text-sm text-cocoa">No colours listed. Customers can only request a custom colour if Customizable is enabled.</p>}
+      </section>
+      <section className="space-y-3 rounded-2xl border border-line p-4">
+        <div>
+          <h2 className="font-display text-2xl">Available sizes</h2>
+          <p className="text-sm text-cocoa">Examples: Small, Medium, Large, or One size. Add up to 12.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <label className="min-w-0 flex-1 text-sm">Size name
+            <input value={size} onChange={(event) => setSize(event.target.value)} maxLength={40} placeholder="e.g. Medium" className="mt-1 min-h-11 w-full rounded-xl border border-line bg-paper px-3" />
+          </label>
+          <div className="self-end">
+            <Button type="button" variant="ghost" disabled={!size.trim() || form.sizes.length >= 12 || form.sizes.some((item) => item.toLowerCase() === size.trim().toLowerCase())} onClick={() => {
+              const next = size.trim();
+              setForm((current) => ({ ...current, sizes: [...current.sizes, next] }));
+              setSize("");
+            }}>Add size</Button>
+          </div>
+        </div>
+        {form.sizes.length ? <ul className="flex flex-wrap gap-2">{form.sizes.map((item) => (
+          <li key={item} className="flex items-center gap-1 rounded-full border border-line bg-paper py-1 pl-3 pr-1 text-sm">
+            {item}
+            <button type="button" aria-label={`Remove size ${item}`} onClick={() => setForm((current) => ({ ...current, sizes: current.sizes.filter((value) => value !== item) }))} className="grid size-7 place-items-center rounded-full text-berry">×</button>
+          </li>
+        ))}</ul> : <p className="text-sm text-cocoa">No sizes listed. Add at least one if customers need to choose a size.</p>}
+      </section>
       <label className="text-sm">Photos
         <input type="file" accept="image/*" className="mt-1 block" onChange={(event) => {
           const file = event.target.files?.[0];
