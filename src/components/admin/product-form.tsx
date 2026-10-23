@@ -196,7 +196,7 @@ export const blankProduct: ProductFormValue = {
   stock: 1,
   productionDays: 5,
   care: "Spot clean and reshape while damp.",
-  shippingNote: "Dispatched from Islamabad after payment.",
+  shippingNote: "Dispatched from Bahawalnagar after payment.",
   images: [],
   colors: [{ name: "Blush", hex: "#F3C1C8" }],
   sizes: ["One size"],
