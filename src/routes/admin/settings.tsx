@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Area, Button, Field, Panel } from "@/components/site/ui";
 import { compressImage } from "@/lib/shop/images";
-import { adminDesk, getChrome, saveCollectionCover, saveCoupon, saveCustomType, saveSettings, saveYarn } from "@/lib/shop/server";
+import { adminDesk, getChrome, saveCategoryCover, saveCoupon, saveCustomType, saveSettings, saveYarn } from "@/lib/shop/server";
 
 export const Route = createFileRoute("/admin/settings")({
   component: SettingsPage,
@@ -19,7 +19,7 @@ function SettingsPage() {
     <div className="space-y-8">
       <h1 className="font-display text-4xl">Settings</h1>
       <ShopForm initial={desk.settings} />
-      <CollectionCoverForm />
+      <CategoryCoverForm />
       <Panel>
         <h2 className="font-display text-2xl">Email</h2>
         <p className="mt-2 text-sm text-cocoa">Order emails send only after a mailbox is connected. Create a new Gmail for the shop, then add SMTP_HOST, SMTP_USER, SMTP_PASS, and ORDER_FROM_EMAIL in the Vercel project. Until those exist, orders are saved here and no email is sent. {desk.subscribers} people are on the newsletter list.</p>
@@ -36,14 +36,14 @@ function SettingsPage() {
 }
 
 
-function CollectionCoverForm() {
-  const [collections, setCollections] = useState<Array<{ id: string; name: string; blurb: string; image: string }>>([]);
+function CategoryCoverForm() {
+  const [categories, setCategories] = useState<Array<{ id: string; name: string; blurb: string; image: string }>>([]);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getChrome()
-      .then((chrome) => setCollections(chrome.collections))
+      .then((chrome) => setCategories(chrome.categories))
       .catch((error: Error) => toast.error(error.message))
       .finally(() => setLoading(false));
   }, []);
@@ -61,21 +61,21 @@ function CollectionCoverForm() {
     }
   }
 
-  async function saveCover(collection: { id: string; name: string; image: string }) {
-    const image = drafts[collection.id];
+  async function saveCover(category: { id: string; name: string; image: string }) {
+    const image = drafts[category.id];
     if (!image) {
-      toast.error("Choose a new cover image first.");
+      toast.error("Choose a new category cover image first.");
       return;
     }
     try {
-      await saveCollectionCover({ data: { id: collection.id, image } });
-      setCollections((current) => current.map((item) => item.id === collection.id ? { ...item, image } : item));
+      await saveCategoryCover({ data: { id: category.id, image } });
+      setCategories((current) => current.map((item) => item.id === category.id ? { ...item, image } : item));
       setDrafts((current) => {
         const next = { ...current };
-        delete next[collection.id];
+        delete next[category.id];
         return next;
       });
-      toast.success(`Saved the ${collection.name} cover`);
+      toast.success(`Saved the ${category.name} cover`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not save this cover.");
     }
@@ -83,31 +83,31 @@ function CollectionCoverForm() {
 
   return (
     <Panel>
-      <h2 className="font-display text-2xl">Collection cover images</h2>
-      <p className="mt-2 text-sm text-cocoa">Choose a dedicated cover for any collection. Covers are independent of product photos. All collections from the shop are listed below.</p>
+      <h2 className="font-display text-2xl">Category cover images</h2>
+      <p className="mt-2 text-sm text-cocoa">Choose a dedicated cover for each product category. Covers are independent of product photos. All categories from the shop are listed below.</p>
       {loading ? <p className="mt-4 text-sm text-cocoa">Loading collections…</p> : (
         <>
-          <p className="mt-3 text-xs text-cocoa">{collections.length} collection{collections.length === 1 ? "" : "s"} available</p>
+          <p className="mt-3 text-xs text-cocoa">{categories.length} categor{categories.length === 1 ? "y" : "ies"} available</p>
           <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {collections.map((collection) => {
-              const preview = drafts[collection.id] ?? collection.image;
+            {categories.map((category) => {
+              const preview = drafts[category.id] ?? category.image;
               return (
-                <article key={collection.id} className="min-w-0 rounded-xl border border-line bg-paper p-3">
-                  <img src={preview} alt={`${collection.name} cover preview`} className="h-24 w-full rounded-lg object-cover" />
-                  <h3 className="mt-2 truncate font-display text-lg" title={collection.name}>{collection.name}</h3>
+                <article key={category.id} className="min-w-0 rounded-xl border border-line bg-paper p-3">
+                  <img src={preview} alt={`${category.name} category cover preview`} className="h-24 w-full rounded-lg object-cover" />
+                  <h3 className="mt-2 truncate font-display text-lg" title={category.name}>{category.name}</h3>
                   <label className="mt-2 block text-xs text-cocoa">
                     Choose cover image
                     <input
                       className="mt-1 block w-full min-w-0 text-xs file:mr-2 file:rounded-full file:border-0 file:bg-berry file:px-3 file:py-1.5 file:text-white"
                       type="file"
                       accept="image/jpeg,image/png,image/webp"
-                      onChange={(event) => { void chooseImage(collection.id, event.currentTarget.files?.[0]); event.currentTarget.value = ""; }}
+                      onChange={(event) => { void chooseImage(category.id, event.currentTarget.files?.[0]); event.currentTarget.value = ""; }}
                     />
                   </label>
                   <button
                     type="button"
                     disabled={!drafts[collection.id]}
-                    onClick={() => void saveCover(collection)}
+                    onClick={() => void saveCover(category)}
                     className="mt-2 min-h-9 rounded-full bg-berry px-4 text-sm text-paper disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     Save cover
@@ -116,7 +116,7 @@ function CollectionCoverForm() {
                 </article>
               );
             })}
-            {collections.length === 0 ? <p className="text-sm text-cocoa">No collections were found in the shop database.</p> : null}
+            {categories.length === 0 ? <p className="text-sm text-cocoa">No product categories were found in the shop database.</p> : null}
           </div>
         </>
       )}
