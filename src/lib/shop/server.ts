@@ -258,6 +258,7 @@ const LineSchema = z.discriminatedUnion("kind", [
     qty: z.number().int().min(1).max(10),
     color: z.string().max(40),
     size: z.string().max(40),
+    customColorRequest: z.boolean().optional().default(false),
   }),
   z.object({
     kind: z.literal("custom"),
@@ -352,7 +353,10 @@ async function buildQuote(sql: Sql, input: z.infer<typeof QuoteSchema>): Promise
       const product = byId.get(line.productId);
       if (!product) throw new Error("A piece in your bag is no longer available.");
       if (product.mystery_tier_id) throw new Error("Add mystery gifts from their product page so the contents stay a secret.");
-      if (line.color && !asArray<{ name: string }>(product.colors).some((color) => color.name === line.color)) {
+      if (line.customColorRequest) {
+        if (!flag(product.customizable)) throw new Error(`${product.name} does not accept custom colour requests.`);
+        if (!line.color.trim()) throw new Error(`Tell us which colour you would like for ${product.name}.`);
+      } else if (line.color && !asArray<{ name: string }>(product.colors).some((color) => color.name === line.color)) {
         throw new Error(`Choose an available colour for ${product.name}.`);
       }
       if (line.size && !asArray<string>(product.sizes).includes(line.size)) {
@@ -367,12 +371,12 @@ async function buildQuote(sql: Sql, input: z.infer<typeof QuoteSchema>): Promise
         productId: product.id,
         tierId: null,
         title: product.name,
-        detail: [line.color, line.size].filter(Boolean).join(" · ") || "Ready-made",
+        detail: [line.customColorRequest ? `Custom colour requested: ${line.color}` : line.color, line.size].filter(Boolean).join(" · ") || "Ready-made",
         image: asArray<string>(product.images)[0] ?? "/photos/hero.jpg",
         qty: line.qty,
         unitPkr: unit,
         linePkr: unit * line.qty,
-        options: { color: line.color, size: line.size, madeToOrder: flag(product.made_to_order) },
+        options: { color: line.color, size: line.size, customColorRequest: line.customColorRequest, madeToOrder: flag(product.made_to_order) },
         mystery: false,
         qualifiesMysteryFree: false,
         trackStock: flag(product.track_stock),
