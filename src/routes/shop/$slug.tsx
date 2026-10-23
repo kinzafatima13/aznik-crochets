@@ -52,9 +52,10 @@ function ProductPage() {
         <h1 className="mt-2 font-display text-5xl">{product.name}</h1>
         <p className="mt-3 text-2xl"><Price value={product.pricePkr} /></p>
         <p className="mt-4 text-cocoa">{product.description}</p>
-        {!tier && product.colors.length ? (
+        {!tier ? (
           <div className="mt-5">
             <p className="mb-2 text-sm text-cocoa">Choose a colour</p>
+            {product.colors.length ? (
             <div className="flex flex-wrap gap-2">
               {product.colors.map((swatch) => (
                 <button key={swatch.name} type="button" onClick={() => { setColor(swatch.name); setRequestCustomColor(false); }} aria-pressed={!requestCustomColor && color === swatch.name} className={`min-h-11 rounded-full border px-3 ${!requestCustomColor && color === swatch.name ? "border-berry bg-blush" : "border-line bg-paper"}`}>
@@ -63,6 +64,9 @@ function ProductPage() {
                 </button>
               ))}
             </div>
+            ) : (
+              <p className="text-sm text-cocoa">No colour options are listed for this piece yet. Please ask us about available yarn colours before ordering.</p>
+            )}
           </div>
         ) : null}
         {!tier && product.customizable ? (
@@ -125,12 +129,16 @@ function ProductPage() {
           </div>
         ) : (
         <>
-        {product.sizes.length ? <p className="mt-4 mb-2 text-sm text-cocoa">Choose a size</p> : null}
+        <p className="mt-4 mb-2 text-sm text-cocoa">Choose a size</p>
+        {product.sizes.length ? (
         <div className="mt-3 flex flex-wrap gap-2">
           {product.sizes.map((option) => (
             <button key={option} type="button" onClick={() => setSize(option)} className={`min-h-11 rounded-full border px-4 ${size === option ? "border-berry bg-blush" : "border-line bg-paper"}`}>{option}</button>
           ))}
         </div>
+        ) : (
+          <p className="text-sm text-cocoa">No size options are listed for this piece yet. We’ll confirm the best fit with you if needed.</p>
+        )}
         <p className="mt-4 text-sm text-cocoa">
           {product.trackStock ? `${product.stock} in stock` : "Made after your order"} · about {product.productionDays} days on the hook · {product.shippingNote}
         </p>
