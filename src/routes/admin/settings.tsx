@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Area, Button, Field, Panel } from "@/components/site/ui";
-import { adminDesk, saveCoupon, saveCustomType, saveSettings, saveYarn } from "@/lib/shop/server";
+import { compressImage } from "@/lib/shop/images";
+import { adminDesk, getChrome, saveCollectionCover, saveCoupon, saveCustomType, saveSettings, saveYarn } from "@/lib/shop/server";
 
 export const Route = createFileRoute("/admin/settings")({
   component: SettingsPage,
@@ -18,6 +19,7 @@ function SettingsPage() {
     <div className="space-y-8">
       <h1 className="font-display text-4xl">Settings</h1>
       <ShopForm initial={desk.settings} />
+      <CollectionCoverForm />
       <Panel>
         <h2 className="font-display text-2xl">Email</h2>
         <p className="mt-2 text-sm text-cocoa">Order emails send only after a mailbox is connected. Create a new Gmail for the shop, then add SMTP_HOST, SMTP_USER, SMTP_PASS, and ORDER_FROM_EMAIL in the Vercel project. Until those exist, orders are saved here and no email is sent. {desk.subscribers} people are on the newsletter list.</p>
@@ -30,6 +32,92 @@ function SettingsPage() {
       <YarnForm />
       <TypeForm />
     </div>
+  );
+}
+
+
+function CollectionCoverForm() {
+  const [collections, setCollections] = useState<Array<{ id: string; name: string; blurb: string; image: string }>>([]);
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getChrome()
+      .then((chrome) => setCollections(chrome.collections))
+      .catch((error: Error) => toast.error(error.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  async function chooseImage(id: string, file?: File) {
+    if (!file) return;
+    try {
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        throw new Error("Choose a JPG, PNG, or WebP image.");
+      }
+      const image = await compressImage(file, 900);
+      setDrafts((current) => ({ ...current, [id]: image }));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not read that image.");
+    }
+  }
+
+  async function saveCover(collection: { id: string; name: string; image: string }) {
+    const image = drafts[collection.id];
+    if (!image) {
+      toast.error("Choose a new cover image first.");
+      return;
+    }
+    try {
+      await saveCollectionCover({ data: { id: collection.id, image } });
+      setCollections((current) => current.map((item) => item.id === collection.id ? { ...item, image } : item));
+      setDrafts((current) => {
+        const next = { ...current };
+        delete next[collection.id];
+        return next;
+      });
+      toast.success(`Saved the ${collection.name} cover`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not save this cover.");
+    }
+  }
+
+  return (
+    <Panel>
+      <h2 className="font-display text-2xl">Collection cover images</h2>
+      <p className="mt-2 text-sm text-cocoa">Choose a dedicated cover for each collection. These images are saved separately from product photos, so deleting a product will not change its collection cover. Upload a JPG, PNG, or WebP; the image is compressed before saving.</p>
+      {loading ? <p className="mt-4 text-sm text-cocoa">Loading collections…</p> : (
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          {collections.map((collection) => {
+            const preview = drafts[collection.id] ?? collection.image;
+            return (
+              <article key={collection.id} className="rounded-2xl border border-line bg-paper p-3">
+                <img src={preview} alt={`${collection.name} cover preview`} className="aspect-[4/3] w-full rounded-xl object-cover" />
+                <h3 className="mt-3 font-display text-xl">{collection.name}</h3>
+                <label className="mt-3 block text-sm">
+                  Upload a separate cover
+                  <input
+                    className="mt-2 block w-full text-sm file:mr-3 file:rounded-full file:border-0 file:bg-berry file:px-4 file:py-2 file:text-white"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={(event) => { void chooseImage(collection.id, event.currentTarget.files?.[0]); event.currentTarget.value = ""; }}
+                  />
+                </label>
+                <button
+                  type="button"
+                  disabled={!drafts[collection.id]}
+                  onClick={() => void saveCover(collection)}
+                  className="mt-3 min-h-10 rounded-full bg-berry px-4 text-sm text-paper disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Save cover
+                </button>
+                {drafts[collection.id] ? <p className="mt-2 text-xs text-cocoa">New cover selected — save to publish it.</p> : null}
+              </article>
+            );
+          })}
+          {collections.length === 0 ? <p className="text-sm text-cocoa">No collections were found.</p> : null}
+        </div>
+      )}
+    </Panel>
   );
 }
 
