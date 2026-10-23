@@ -85,7 +85,7 @@ function CategoryCoverForm() {
     <Panel>
       <h2 className="font-display text-2xl">Category cover images</h2>
       <p className="mt-2 text-sm text-cocoa">Choose a dedicated cover for each product category. Covers are independent of product photos. All categories from the shop are listed below.</p>
-      {loading ? <p className="mt-4 text-sm text-cocoa">Loading collections…</p> : (
+      {loading ? <p className="mt-4 text-sm text-cocoa">Loading categories…</p> : (
         <>
           <p className="mt-3 text-xs text-cocoa">{categories.length} categor{categories.length === 1 ? "y" : "ies"} available</p>
           <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -106,13 +106,13 @@ function CategoryCoverForm() {
                   </label>
                   <button
                     type="button"
-                    disabled={!drafts[collection.id]}
+                    disabled={!drafts[category.id]}
                     onClick={() => void saveCover(category)}
                     className="mt-2 min-h-9 rounded-full bg-berry px-4 text-sm text-paper disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     Save cover
                   </button>
-                  {drafts[collection.id] ? <p className="mt-1 text-xs text-cocoa">Selected — save to publish.</p> : null}
+                  {drafts[category.id] ? <p className="mt-1 text-xs text-cocoa">Selected — save to publish.</p> : null}
                 </article>
               );
             })}
