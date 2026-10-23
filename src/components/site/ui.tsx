@@ -91,8 +91,19 @@ export function Price({ value, className }: { value: number; className?: string 
 export function ProductCard({
   product,
 }: {
-  product: { id: string; name: string; pricePkr: number; image: string; categoryId?: string; mystery?: boolean };
+  product: {
+    id: string;
+    name: string;
+    pricePkr: number;
+    image: string;
+    categoryId?: string;
+    mystery?: boolean;
+    colors?: Array<{ name: string; hex: string }>;
+    sizes?: string[];
+  };
 }) {
+  const colorNames = product.colors?.map((color) => color.name).filter(Boolean) ?? [];
+  const sizeNames = product.sizes?.filter(Boolean) ?? [];
   return (
     <Link to="/shop/$slug" params={{ slug: product.id }} className="group block">
       <div className="overflow-hidden rounded-3xl bg-paper shadow-soft">
@@ -108,6 +119,12 @@ export function ProductCard({
       <div className="mt-3 space-y-1">
         <p className="font-display text-lg leading-tight">{product.name}</p>
         <Price value={product.pricePkr} className="text-sm text-cocoa" />
+        {!product.mystery ? (
+          <div className="pt-1 text-xs text-cocoa">
+            <p><span className="font-semibold text-ink">Colours:</span> {colorNames.length ? colorNames.join(", ") : "Ask us about available colours"}</p>
+            <p className="mt-1"><span className="font-semibold text-ink">Sizes:</span> {sizeNames.length ? sizeNames.join(", ") : "Ask us to confirm the best fit"}</p>
+          </div>
+        ) : null}
       </div>
     </Link>
   );
