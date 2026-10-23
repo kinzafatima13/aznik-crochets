@@ -61,7 +61,7 @@ href="https://wa.me/923195581899?text=Hi!%20I%20would%20like%20to%20place%20an%2
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Order on WhatsApp"
-              className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg hover:bg-[#1ebe57] transition"
+              className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#C84B63] text-white shadow-lg hover:bg-[#A93B52] transition"
             >
               <svg viewBox="0 0 32 32" className="h-8 w-8" fill="currentColor">
                 <path d="M16 2C8.3 2 2 8.3 2 16c0 2.5.7 4.8 1.9 6.8L2 30l7.4-1.9c1.9 1 4.1 1.6 6.6 1.6 7.7 0 14-6.3 14-14S23.7 2 16 2zm0 25.5c-2.2 0-4.2-.6-6-1.6l-.4-.2-4.4 1.1 1.2-4.3-.2-.4c-1.1-1.8-1.7-3.8-1.7-5.9 0-6.4 5.2-11.6 11.6-11.6S27.6 9.6 27.6 16 22.4 27.5 16 27.5zm6.3-8.7c-.3-.2-1.9-.9-2.2-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7 0c-.3-.2-1.3-.5-2.5-1.5-1-.9-1.6-1.9-1.8-2.2-.2-.3 0-.5.1-.6.1-.1.3-.4.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.7-1.8-1-2.4-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.1s.9 2.4 1 2.6c.1.2 1.8 2.8 4.4 3.8 1.6.6 2.2.7 3 .6.5-.1 1.9-.8 2.2-1.5.3-.7.3-1.3.2-1.5-.1-.2-.3-.3-.6-.5z"/>
