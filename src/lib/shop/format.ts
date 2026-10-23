@@ -77,7 +77,7 @@ export function describePiece(kind: string, options: unknown): string {
   if (kind === "quote" && typeof row.description === "string") return row.description;
   const bits: string[] = [];
   if (typeof row.pattern === "string" && row.pattern) bits.push(row.pattern);
-  if (typeof row.color === "string" && row.color) bits.push(row.color);
+  if (typeof row.color === "string" && row.color) bits.push(row.customColorRequest === true ? `Custom colour requested: ${row.color}` : row.color);
   if (Array.isArray(row.colors)) {
     const names = row.colors
       .map((color) => (color && typeof color === "object" && "name" in color ? String((color as { name: unknown }).name) : ""))
