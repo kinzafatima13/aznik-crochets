@@ -555,20 +555,20 @@ async function buildQuote(sql: Sql, input: z.infer<typeof QuoteSchema>): Promise
   };
 }
 
-const CollectionCoverSchema = z.object({
+const CategoryCoverSchema = z.object({
   id: z.string().trim().min(2).max(80).regex(/^[a-z0-9-]+$/),
   image: z.string().trim().min(1).max(500_000),
 });
 
-export const saveCollectionCover = createServerFn({ method: "POST" })
+export const saveCategoryCover = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator((input: unknown) => parse(CollectionCoverSchema, input))
+  .validator((input: unknown) => parse(CategoryCoverSchema, input))
   .handler(async ({ data, context }) => {
     assertImage(data.image);
     const sql = await db();
     await assertAdmin(sql, context.userId);
-    const updated = await sql<{ id: string }>`update collections set image = ${data.image} where id = ${data.id} returning id`;
-    if (!updated.length) throw new Error("That collection was not found.");
+    const updated = await sql<{ id: string }>`update categories set image = ${data.image} where id = ${data.id} returning id`;
+    if (!updated.length) throw new Error("That category was not found.");
     return { id: data.id };
   });
 
