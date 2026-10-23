@@ -18,6 +18,8 @@ function ProductPage() {
   const { user } = useCurrentUserState();
   const [color, setColor] = useState(data?.product.colors[0]?.name ?? "");
   const [size, setSize] = useState(data?.product.sizes[0] ?? "");
+  const [requestCustomColor, setRequestCustomColor] = useState(false);
+  const [customColorName, setCustomColorName] = useState("");
   const [image, setImage] = useState(data?.product.image ?? "");
   const initialTier = data?.product.mystery ? data.product.tier : null;
   const [colorFamily, setColorFamily] = useState(initialTier?.colorFamilies[0] ?? "");
@@ -50,14 +52,41 @@ function ProductPage() {
         <h1 className="mt-2 font-display text-5xl">{product.name}</h1>
         <p className="mt-3 text-2xl"><Price value={product.pricePkr} /></p>
         <p className="mt-4 text-cocoa">{product.description}</p>
-        <div className="mt-5 flex flex-wrap gap-2">
-          {tier ? null : product.colors.map((swatch) => (
-            <button key={swatch.name} type="button" onClick={() => setColor(swatch.name)} className={`min-h-11 rounded-full border px-3 ${color === swatch.name ? "border-berry bg-blush" : "border-line bg-paper"}`}>
-              <span className="mr-2 inline-block h-3 w-3 rounded-full" style={{ background: swatch.hex }} />
-              {swatch.name}
+        {!tier && product.colors.length ? (
+          <div className="mt-5">
+            <p className="mb-2 text-sm text-cocoa">Choose a colour</p>
+            <div className="flex flex-wrap gap-2">
+              {product.colors.map((swatch) => (
+                <button key={swatch.name} type="button" onClick={() => { setColor(swatch.name); setRequestCustomColor(false); }} aria-pressed={!requestCustomColor && color === swatch.name} className={`min-h-11 rounded-full border px-3 ${!requestCustomColor && color === swatch.name ? "border-berry bg-blush" : "border-line bg-paper"}`}>
+                  <span className="mr-2 inline-block h-3 w-3 rounded-full border border-line" style={{ background: swatch.hex }} />
+                  {swatch.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+        {!tier && product.customizable ? (
+          <div className="mt-3 rounded-2xl border border-line p-3">
+            <button type="button" aria-pressed={requestCustomColor} onClick={() => {
+              setRequestCustomColor((current) => {
+                const next = !current;
+                if (next) setColor("");
+                else setColor(product.colors[0]?.name ?? "");
+                return next;
+              });
+            }} className={`min-h-11 rounded-full border px-4 text-sm ${requestCustomColor ? "border-berry bg-blush" : "border-line bg-paper"}`}>
+              {requestCustomColor ? "✓ Request a different colour" : "Want another colour? Request one"}
             </button>
-          ))}
-        </div>
+            {requestCustomColor ? (
+              <div className="mt-3">
+                <label className="block text-sm text-cocoa">Colour you'd like
+                  <input value={customColorName} onChange={(event) => setCustomColorName(event.target.value.slice(0, 40))} maxLength={40} placeholder="e.g. navy blue, mustard, lavender" className="mt-1 min-h-11 w-full rounded-xl border border-line bg-paper px-3" />
+                </label>
+                <p className="mt-2 text-xs text-cocoa">This is a colour request, not a confirmed yarn match. We’ll confirm whether the colour is available before making it.</p>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
         {tier ? (
           <div className="mt-5 space-y-4">
             {tier.offerOn ? (
@@ -96,6 +125,7 @@ function ProductPage() {
           </div>
         ) : (
         <>
+        {product.sizes.length ? <p className="mt-4 mb-2 text-sm text-cocoa">Choose a size</p> : null}
         <div className="mt-3 flex flex-wrap gap-2">
           {product.sizes.map((option) => (
             <button key={option} type="button" onClick={() => setSize(option)} className={`min-h-11 rounded-full border px-4 ${size === option ? "border-berry bg-blush" : "border-line bg-paper"}`}>{option}</button>
@@ -109,14 +139,19 @@ function ProductPage() {
             disabled={soldOut}
             onClick={() => {
               if (soldOut) return;
+              const chosenColor = requestCustomColor ? customColorName.trim() : color;
+              if (requestCustomColor && !chosenColor) {
+                toast.error("Tell us which colour you would like.");
+                return;
+              }
               add({
-                key: `ready:${product.id}:${color}:${size}`,
+                key: `ready:${product.id}:${requestCustomColor ? `custom-${chosenColor}` : color}:${size}`,
                 title: product.name,
-                detail: [color, size].filter(Boolean).join(" · "),
+                detail: [...(requestCustomColor ? [`Custom colour requested: ${chosenColor}`] : [color]), size].filter(Boolean).join(" · "),
                 image: product.image,
-                input: { kind: "ready", productId: product.id, qty: 1, color, size },
+                input: { kind: "ready", productId: product.id, qty: 1, color: chosenColor, size, customColorRequest: requestCustomColor },
               });
-              toast.success("Tucked into your bag");
+              toast.success(requestCustomColor ? "Colour request added. We’ll confirm availability before making it." : "Tucked into your bag");
             }}
           >
             {soldOut ? "Sold out" : <>Add to bag · {pkr(product.pricePkr)}</>}

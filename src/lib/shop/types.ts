@@ -6,6 +6,7 @@ export type ReadyInput = {
   qty: number;
   color: string;
   size: string;
+  customColorRequest?: boolean;
 };
 
 export type CustomDesign = {
