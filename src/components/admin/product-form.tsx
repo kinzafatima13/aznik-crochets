@@ -31,9 +31,9 @@ type ProductFormValue = {
 
 export function ProductForm({ initial }: { initial: ProductFormValue }) {
   const [form, setForm] = useState(initial);
-  const [colorName, setColorName] = useState("Blush");
+  const [colorName, setColorName] = useState("");
   const [colorHex, setColorHex] = useState("#F3C1C8");
-  const [size, setSize] = useState("One size");
+  const [size, setSize] = useState("");
   const [lists, setLists] = useState<{ categories: Array<{ id: string; name: string }>; collections: Array<{ id: string; name: string }> }>({
     categories: [],
     collections: [],
