@@ -555,6 +555,23 @@ async function buildQuote(sql: Sql, input: z.infer<typeof QuoteSchema>): Promise
   };
 }
 
+const CategoryCoverSchema = z.object({
+  id: z.string().trim().min(2).max(80).regex(/^[a-z0-9-]+$/),
+  image: z.string().trim().min(1).max(500_000),
+});
+
+export const saveCategoryCover = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((input: unknown) => parse(CategoryCoverSchema, input))
+  .handler(async ({ data, context }) => {
+    assertImage(data.image);
+    const sql = await db();
+    await assertAdmin(sql, context.userId);
+    const updated = await sql<{ id: string }>`update categories set image = ${data.image} where id = ${data.id} returning id`;
+    if (!updated.length) throw new Error("That category was not found.");
+    return { id: data.id };
+  });
+
 export const getChrome = createServerFn({ method: "GET" }).handler(async () => {
   const sql = await db();
   const settings = await loadSettings(sql);
