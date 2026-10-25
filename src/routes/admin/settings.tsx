@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { Area, Button, Field, Panel } from "@/components/site/ui";
 import { compressImage } from "@/lib/shop/images";
@@ -151,7 +151,7 @@ function CategoryManager() {
     return name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   }
 
-  async function addCategory(event: React.FormEvent<HTMLFormElement>) {
+  async function addCategory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const name = draft.name.trim();
     const id = categoryId(name);
