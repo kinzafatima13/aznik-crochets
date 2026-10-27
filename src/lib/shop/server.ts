@@ -327,7 +327,12 @@ type BuiltLine = {
 
 async function buildQuote(sql: Sql, input: z.infer<typeof QuoteSchema>): Promise<Quote & { built: BuiltLine[]; catalogPkr: number; customPkr: number }> {
   const settings = await loadSettings(sql);
-  const products = await sql<ProductRow>`select * from products where status = 'published'`;
+  const products = await sql<ProductRow>`select id, name, description, category_id, collection_id, price_pkr, status, made_to_order, track_stock, stock, production_days, care, shipping_note,
+      case
+        when jsonb_typeof(images) = 'array' and jsonb_array_length(images) > 0 then jsonb_build_array(images -> 0)
+        else '[]'::jsonb
+      end as images,
+      colors, sizes, customizable, mystery_eligible, featured, bestseller, is_new, material_cost_pkr, created_at, mystery_tier_id from products where status = 'published'`;
   const byId = new Map(products.map((row) => [row.id, row]));
   const types = await sql<{ id: string; name: string; base_pkr: number; production_days: number; sizes: unknown; active: boolean }>`select * from custom_types where active = true`;
   const patterns = await sql<{ id: string; name: string; extra_pkr: number; active: boolean }>`select * from custom_patterns where active = true`;
@@ -574,33 +579,42 @@ export const saveCategoryCover = createServerFn({ method: "POST" })
 
 export const getChrome = createServerFn({ method: "GET" }).handler(async () => {
   const sql = await db();
-  const settings = await loadSettings(sql);
-  const categories = await sql<{ id: string; name: string; blurb: string; image: string }>`select id, name, blurb, image from categories order by sort`;
-  const collections = await sql<{ id: string; name: string; blurb: string; image: string }>`select id, name, blurb, image from collections order by sort`;
+  const [settings, categories, collections] = await Promise.all([
+    loadSettings(sql),
+    sql<{ id: string; name: string; blurb: string; image: string }>`select id, name, blurb, image from categories order by sort`,
+    sql<{ id: string; name: string; blurb: string; image: string }>`select id, name, blurb, image from collections order by sort`,
+  ]);
   return { settings: publicSettings(settings), categories, collections };
 });
 
 export const getHome = createServerFn({ method: "GET" }).handler(async () => {
   const sql = await db();
-  const settings = await loadSettings(sql);
-  const categories = await sql<{ id: string; name: string; blurb: string; image: string; sort: number }>`select id, name, blurb, image, sort from categories order by sort`;
-  const collections = await sql<{ id: string; name: string; blurb: string; image: string }>`select id, name, blurb, image from collections order by sort`;
-  const products = await sql<ProductRow>`select * from products where status = 'published' order by created_at desc`;
-  const tiers = await sql<{
-    id: string;
-    name: string;
-    blurb: string;
-    price_pkr: number;
-    value_note: string;
-    categories: unknown;
-    exclusions: string;
-    qty_available: number;
-    color_families: unknown;
-    styles: unknown;
-    free_delivery: boolean;
-    requires_prepay: boolean;
-  }>`select id, name, blurb, price_pkr, value_note, categories, exclusions, qty_available, color_families, styles, free_delivery, requires_prepay from mystery_tiers where active = true order by sort`;
-  const reviews = await sql<{ id: string; rating: number; body: string; author_name: string; created_at: string }>`select id, rating, body, author_name, to_char(created_at, 'DD Mon YYYY') as created_at from reviews order by created_at desc limit 6`;
+  const [settings, categories, collections, products, tiers, reviews] = await Promise.all([
+    loadSettings(sql),
+    sql<{ id: string; name: string; blurb: string; image: string; sort: number }>`select id, name, blurb, image, sort from categories order by sort`,
+    sql<{ id: string; name: string; blurb: string; image: string }>`select id, name, blurb, image from collections order by sort`,
+    sql<ProductRow>`select id, name, description, category_id, collection_id, price_pkr, status, made_to_order, track_stock, stock, production_days, care, shipping_note,
+      case
+        when jsonb_typeof(images) = 'array' and jsonb_array_length(images) > 0 then jsonb_build_array(images -> 0)
+        else '[]'::jsonb
+      end as images,
+      colors, sizes, customizable, mystery_eligible, featured, bestseller, is_new, material_cost_pkr, created_at, mystery_tier_id from products where status = 'published' and (bestseller = true or is_new = true or collection_id = 'strawberry-girl') order by created_at desc`,
+    sql<{
+      id: string;
+      name: string;
+      blurb: string;
+      price_pkr: number;
+      value_note: string;
+      categories: unknown;
+      exclusions: string;
+      qty_available: number;
+      color_families: unknown;
+      styles: unknown;
+      free_delivery: boolean;
+      requires_prepay: boolean;
+    }>`select id, name, blurb, price_pkr, value_note, categories, exclusions, qty_available, color_families, styles, free_delivery, requires_prepay from mystery_tiers where active = true order by sort`,
+    sql<{ id: string; rating: number; body: string; author_name: string; created_at: string }>`select id, rating, body, author_name, to_char(created_at, 'DD Mon YYYY') as created_at from reviews order by created_at desc limit 6`,
+  ]);
   return {
     settings: publicSettings(settings),
     categories,
@@ -639,23 +653,27 @@ export const getCatalog = createServerFn({ method: "GET" })
   .validator((input: unknown) => parse(CatalogSchema, input ?? {}))
   .handler(async ({ data }) => {
     const sql = await db();
-    const settings = await loadSettings(sql);
-    const tiers = (await sql<{
-      id: string;
-      name: string;
-      blurb: string;
-      price_pkr: number;
-      value_note: string;
-      categories: unknown;
-      exclusions: string;
-      qty_available: number;
-      color_families: unknown;
-      styles: unknown;
-      free_delivery: boolean;
-      requires_prepay: boolean;
-      active: boolean;
-    }>`select id, name, blurb, price_pkr, value_note, categories, exclusions, qty_available, color_families, styles, free_delivery, requires_prepay, active from mystery_tiers`).map((tier) => tierCard(tier));
-    const products = (await sql<ProductRow>`select * from products where status = 'published'`)
+    const [settings, tierRows, productRows] = await Promise.all([
+      loadSettings(sql),
+      sql<{
+        id: string;
+        name: string;
+        blurb: string;
+        price_pkr: number;
+        value_note: string;
+        categories: unknown;
+        exclusions: string;
+        qty_available: number;
+        color_families: unknown;
+        styles: unknown;
+        free_delivery: boolean;
+        requires_prepay: boolean;
+        active: boolean;
+      }>`select id, name, blurb, price_pkr, value_note, categories, exclusions, qty_available, color_families, styles, free_delivery, requires_prepay, active from mystery_tiers`,
+      sql<ProductRow>`select * from products where status = 'published'`,
+    ]);
+    const tiers = tierRows.map((tier) => tierCard(tier));
+    const products = productRows
       .map((row) => withMystery(card(row, false, false), tiers, flag(settings.mystery_free_delivery)))
       .filter((product) => product !== null);
     let list = products.filter((product) => {
