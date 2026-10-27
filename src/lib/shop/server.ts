@@ -598,7 +598,7 @@ export const getHome = createServerFn({ method: "GET" }).handler(async () => {
         when jsonb_typeof(images) = 'array' and jsonb_array_length(images) > 0 then jsonb_build_array(images -> 0)
         else '[]'::jsonb
       end as images,
-      colors, sizes, customizable, mystery_eligible, featured, bestseller, is_new, material_cost_pkr, created_at, mystery_tier_id from products where status = 'published' order by created_at desc`,
+      colors, sizes, customizable, mystery_eligible, featured, bestseller, is_new, material_cost_pkr, created_at, mystery_tier_id from products where status = 'published' and (bestseller = true or is_new = true or collection_id = 'strawberry-girl') order by created_at desc`,
     sql<{
       id: string;
       name: string;
